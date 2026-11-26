@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StudyFlow AI — интеллектуальная образовательная платформа</title>
+<meta name="description" content="StudyFlow AI — современная образовательная платформа с ИИ: AI-репетитор, генератор тестов, карточки, английский, планировщик и статистика.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238b5cf6'/%3E%3Cstop offset='1' stop-color='%234f7dff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='24' height='24' rx='6' fill='url(%23g)'/%3E%3Cpath d='M12 4l2.2 4.6L19 11l-4.8 2.4L12 18l-2.2-4.6L5 11l4.8-2.4z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+/* ============ StudyFlow AI — дизайн-система ============ */
+:root{
+  --bg:#050510; --bg-2:#0a0a1f; --panel:#0c0c22;
+  --card:linear-gradient(165deg,rgba(255,255,255,.055),rgba(255,255,255,.018));
+  --brd:rgba(255,255,255,.09); --brd-2:rgba(255,255,255,.16);
+  --txt:#eef0ff; --muted:#98a0c8; --muted-2:#6b72a0;
+  --vio:#8b5cf6; --vio-2:#a78bfa; --blue:#4f7dff; --cyan:#38bdf8;
+  --gold:#fbbf24; --gold-2:#f59e0b; --ok:#34d399; --err:#f87171;
+  --grad:linear-gradient(135deg,#8b5cf6 0%,#4f7dff 100%);
+  --grad-soft:linear-gradient(135deg,rgba(139,92,246,.22),rgba(79,125,255,.18));
+  --grad-gold:linear-gradient(135deg,#f59e0b,#fde68a);
+  --r-lg:20px; --r-md:14px; --r-sm:10px;
+  --sh:0 10px 40px rgba(0,0,0,.45);
+  --sh-vio:0 8px 30px rgba(139,92,246,.35);
+  --sh-gold:0 8px 30px rgba(245,158,11,.30);
+  --sb-w:264px;
+  --ease:cubic-bezier(.22,.8,.26,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,'Segoe UI',Roboto,'Inter','Helvetica Neue',Arial,sans-serif;
+  background:var(--bg); color:var(--txt); min-height:100vh; overflow-x:hidden;
+  font-size:15.5px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(139,92,246,.45);color:#fff}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(139,92,246,.28);border-radius:99px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:rgba(139,92,246,.5)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:6px}
+a{color:var(--vio-2)}
+button{font-family:inherit;color:inherit}
+h1,h2,h3,h4{line-height:1.25;font-weight:700}
+
+/* ---------- фон: аврора + сетка + частицы ---------- */
+.bg{position:fixed;inset:0;z-index:-3;overflow:hidden;pointer-events:none;background:
+  radial-gradient(1200px 800px at 85% -10%,rgba(79,125,255,.14),transparent 60%),
+  radial-gradient(1000px 700px at -10% 30%,rgba(139,92,246,.13),transparent 60%),
+  radial-gradient(900px 900px at 70% 110%,rgba(245,158,11,.05),transparent 55%),
+  var(--bg);}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform}
+.orb-1{width:520px;height:520px;left:-140px;top:-120px;background:radial-gradient(circle,rgba(139,92,246,.5),transparent 65%);animation:orbFloat 26s ease-in-out infinite}
+.orb-2{width:640px;height:640px;right:-180px;top:16%;background:radial-gradient(circle,rgba(79,125,255,.42),transparent 65%);animation:orbFloat 32s ease-in-out infinite reverse}
+.orb-3{width:460px;height:460px;left:32%;bottom:-220px;background:radial-gradient(circle,rgba(245,158,11,.16),transparent 65%);animation:orbFloat 38s ease-in-out infinite}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-40px) scale(1.08)}66%{transform:translate(-40px,50px) scale(.95)}}
+.bg-grid{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 75%);
+          mask-image:radial-gradient(ellipse 90% 70% at 50% 0%,#000 30%,transparent 75%);}
+#bg-canvas{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+/* ---------- иконки ---------- */
+.ic{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic-f{fill:currentColor;stroke:none}
+.ic-sm{width:16px;height:16px}
+.ic-lg{width:26px;height:26px}
+
+/* ---------- кнопки ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;
+  border-radius:var(--r-md);padding:11px 20px;font-size:14.5px;font-weight:600;cursor:pointer;
+  background:rgba(255,255,255,.06);color:var(--txt);transition:transform .2s var(--ease),box-shadow .25s,background .2s,border-color .2s,opacity .2s;
+  user-select:none;text-decoration:none;white-space:nowrap}
+.btn:hover{transform:translateY(-2px);background:rgba(255,255,255,.1)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn-primary{background:var(--grad);box-shadow:0 4px 18px rgba(139,92,246,.4)}
+.btn-primary:hover{box-shadow:0 8px 28px rgba(139,92,246,.55);background:var(--grad)}
+.btn-gold{background:var(--grad-gold);color:#2a1c00;box-shadow:var(--sh-gold)}
+.btn-gold:hover{box-shadow:0 10px 34px rgba(245,158,11,.5);background:var(--grad-gold)}
+.btn-ghost{background:transparent;border-color:var(--brd)}
+.btn-ghost:hover{border-color:var(--brd-2);background:rgba(255,255,255,.05)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--err);border-color:rgba(248,113,113,.3)}
+.btn-danger:hover{background:rgba(248,113,113,.2)}
+.btn-sm{padding:7px 13px;font-size:13px;border-radius:var(--r-sm)}
+.btn-lg{padding:15px 30px;font-size:16px;border-radius:16px}
+.icon-btn{width:40px;height:40px;padding:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);border:1px solid var(--brd);cursor:pointer;transition:all .2s}
+.icon-btn:hover{background:rgba(139,92,246,.2);border-color:rgba(139,92,246,.5);transform:translateY(-1px)}
+
+/* ---------- инпуты ---------- */
+.inp,.sel,.ta{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:var(--r-md);
+  color:var(--txt);padding:11px 14px;font-size:14.5px;font-family:inherit;transition:border-color .2s,box-shadow .2s,background .2s}
+.inp:focus,.sel:focus,.ta:focus{outline:none;border-color:var(--vio);box-shadow:0 0 0 3px rgba(139,92,246,.22);background:rgba(255,255,255,.07)}
+.inp::placeholder,.ta::placeholder{color:var(--muted-2)}
+.sel{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2398a0c8' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer}
+.sel option{background:var(--panel);color:var(--txt)}
+.ta{resize:none;min-height:44px;max-height:180px}
+.lbl{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 7px 2px}
+.field{margin-bottom:14px}
+
+/* сегментированный контрол */
+.segmented{display:inline-flex;background:rgba(255,255,255,.05);border:1px solid var(--brd);border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.segmented button{border:none;background:transparent;color:var(--muted);padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.segmented button:hover{color:var(--txt)}
+.segmented button.on{background:var(--grad);color:#fff;box-shadow:0 2px 12px rgba(139,92,246,.4)}
+
+/* свитч */
+.switch{position:relative;width:44px;height:24px;flex:none;cursor:pointer}
+.switch input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.switch .tr{position:absolute;inset:0;background:rgba(255,255,255,.1);border:1px solid var(--brd);border-radius:99px;transition:background .25s}
+.switch .tr::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .25s var(--ease)}
+.switch input:checked + .tr{background:var(--grad);border-color:transparent}
+.switch input:checked + .tr::after{transform:translateX(20px)}
+
+/* ---------- бейджи и чипы ---------- */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;letter-spacing:.4px;
+  background:rgba(255,255,255,.08);color:var(--muted);border:1px solid var(--brd)}
+.badge-premium{background:var(--grad-gold);color:#2a1c00;border:none;box-shadow:0 2px 14px rgba(245,158,11,.35)}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:99px;font-size:13px;font-weight:600;
+  background:rgba(255,255,255,.05);border:1px solid var(--brd);color:var(--muted);cursor:pointer;transition:all .2s}
+.chip:hover{color:var(--txt);border-color:var(--brd-2)}
+.chip.on{background:var(--grad-soft);border-color:rgba(139,92,246,.55);color:#fff}
+.locked-chip{opacity:.65}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:rgba(139,92,246,.16);color:var(--vio-2)}
+
+/* ---------- карточки ---------- */
+.card{background:var(--card);border:1px solid var(--brd);border-radius:var(--r-lg);box-shadow:var(--sh);padding:22px;position:relative}
+.card-hover{transition:transform .25s var(--ease),box-shadow .3s,border-color .3s}
+.card-hover:hover{transform:translateY(-4px);border-color:var(--brd-2);box-shadow:0 16px 44px rgba(0,0,0,.55),0 0 0 1px rgba(139,92,246,.14)}
+.grad-brd{position:relative;border:1px solid transparent;background:
+  linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.015)) padding-box,
+  linear-gradient(135deg,rgba(139,92,246,.7),rgba(79,125,255,.4),rgba(245,158,11,.5)) border-box}
+.grad-brd-gold{border:1px solid transparent;background:
+  linear-gradient(165deg,rgba(245,158,11,.09),rgba(255,255,255,.02)) padding-box,
+  linear-gradient(135deg,rgba(245,158,11,.75),rgba(139,92,246,.4)) border-box}
+
+/* текстовые утилиты */
+.grad-txt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gold-txt{background:var(--grad-gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.center{text-align:center}
+.row{display:flex;align-items:center;gap:12px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.spacer{flex:1}
+.mt-8{margin-top:8px}.mt-14{margin-top:14px}.mt-20{margin-top:20px}.mb-14{margin-bottom:14px}.mb-20{margin-bottom:20px}
+
+/* прогресс-бар */
+.pbar{height:9px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;position:relative}
+.pbar>i{display:block;height:100%;border-radius:99px;background:var(--grad);transition:width .6s var(--ease);box-shadow:0 0 12px rgba(139,92,246,.5)}
+.pbar>i.gold{background:var(--grad-gold)}
+.pbar>i.ok{background:linear-gradient(90deg,#10b981,#34d399)}
+
+/* скоелетон и типовая анимация загрузки */
+.skeleton{position:relative;overflow:hidden;background:rgba(255,255,255,.06);border-radius:12px;min-height:60px}
+.skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);animation:shimmer 1.4s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--vio-2);animation:dotB 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.15s;background:var(--blue)}
+.dots span:nth-child(3){animation-delay:.3s;background:var(--gold)}
+@keyframes dotB{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+</style>
+<style>
+/* ============ каркас приложения ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sb-w);z-index:50;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,rgba(18,18,42,.92),rgba(10,10,28,.96));border-right:1px solid var(--brd);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:transform .3s var(--ease)}
+.sb-logo{display:flex;align-items:center;gap:13px;padding:20px 18px 16px}
+.logo-cube{width:42px;height:42px;perspective:300px;flex:none}
+.logo-cube .cube{width:100%;height:100%;position:relative;transform-style:preserve-3d;animation:cubeSpin 14s linear infinite}
+.logo-cube .face{position:absolute;inset:0;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--grad);border:1px solid rgba(255,255,255,.25);box-shadow:0 0 18px rgba(139,92,246,.5)}
+.logo-cube .face svg{width:22px;height:22px;color:#fff}
+.logo-cube .f1{transform:translateZ(21px)}
+.logo-cube .f2{transform:rotateY(90deg) translateZ(21px)}
+@keyframes cubeSpin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+.sb-name{font-size:18px;font-weight:800;letter-spacing:.2px}
+.sb-name b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sb-name span{color:var(--gold)}
+.sb-sub{font-size:11px;color:var(--muted-2);letter-spacing:.6px;text-transform:uppercase}
+
+.sb-nav{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:13px;border:none;background:transparent;
+  color:var(--muted);font-size:14.5px;font-weight:600;cursor:pointer;transition:all .2s;text-align:left;position:relative;width:100%}
+.nav-item:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.nav-item.on{color:#fff;background:var(--grad-soft);border:1px solid rgba(139,92,246,.35);box-shadow:inset 0 0 18px rgba(139,92,246,.12)}
+.nav-item.on::before{content:'';position:absolute;left:-12px;top:20%;bottom:20%;width:3px;border-radius:99px;background:var(--grad)}
+.nav-item .ic{width:21px;height:21px}
+.nav-item .nav-dot{margin-left:auto;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--grad-gold);color:#2a1c00}
+
+.sb-foot{padding:12px;border-top:1px solid var(--brd);display:flex;flex-direction:column;gap:10px}
+.sb-plan{border-radius:14px;padding:12px 13px;font-size:12.5px;background:var(--card);border:1px solid var(--brd);display:flex;align-items:center;gap:10px;cursor:pointer;transition:border-color .2s;width:100%;text-align:left}
+.sb-plan:hover{border-color:rgba(245,158,11,.5)}
+.sb-mode{font-size:11.5px;color:var(--muted-2);display:flex;align-items:center;gap:7px;padding:0 4px}
+.mode-dot{width:8px;height:8px;border-radius:50%;background:var(--err);box-shadow:0 0 8px currentColor}
+.mode-dot.ok{background:var(--ok)}
+
+.main{flex:1;margin-left:var(--sb-w);min-width:0;display:flex;flex-direction:column}
+.topbar{display:none;position:sticky;top:0;z-index:40;background:rgba(8,8,24,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:10px 14px;align-items:center;gap:12px}
+.content{width:100%;max-width:1180px;margin:0 auto;padding:28px 26px 70px}
+
+.view{display:none}
+.view.active{display:block}
+.view.active > *{animation:rise .5s var(--ease) both}
+.view.active > *:nth-child(2){animation-delay:.05s}
+.view.active > *:nth-child(3){animation-delay:.1s}
+.view.active > *:nth-child(4){animation-delay:.15s}
+.view.active > *:nth-child(5){animation-delay:.2s}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.995)}to{opacity:1;transform:none}}
+.view-head{margin-bottom:22px}
+.view-head h1{font-size:clamp(22px,3.2vw,30px)}
+.view-head p{color:var(--muted);margin-top:5px;font-size:14.5px}
+
+/* ---------- 3D tilt-карточки ---------- */
+.tilt{transform-style:preserve-3d;transition:transform .18s ease-out;will-change:transform}
+.tilt .tilt-in{transform:translateZ(24px)}
+.tilt::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .25s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.09),transparent 45%)}
+.tilt:hover::after{opacity:1}
+@media (hover:none){.tilt{transform:none!important}}
+
+/* ---------- Dashboard ---------- */
+.greet-emoji{font-size:30px;line-height:1}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.stat-card{padding:18px;overflow:hidden}
+.stat-card .ic-wrap{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.ic-wrap.vio{background:rgba(139,92,246,.16);color:var(--vio-2)}
+.ic-wrap.blue{background:rgba(79,125,255,.16);color:#8fb0ff}
+.ic-wrap.gold{background:rgba(245,158,11,.15);color:var(--gold)}
+.ic-wrap.ok{background:rgba(52,211,153,.14);color:var(--ok)}
+.stat-num{font-size:26px;font-weight:800;letter-spacing:.3px}
+.stat-lbl{font-size:12.5px;color:var(--muted);margin-top:2px}
+.dash-cols{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:18px}
+.ring-wrap{display:flex;align-items:center;gap:20px}
+.ring{position:relative;width:118px;height:118px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .bgc{fill:none;stroke:rgba(255,255,255,.08);stroke-width:10}
+.ring .fgc{fill:none;stroke:url(#ringGrad);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s var(--ease)}
+.ring-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:24px}
+.ring-val small{font-size:10.5px;color:var(--muted);font-weight:600;letter-spacing:.4px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.quick-tile{display:flex;flex-direction:column;gap:9px;padding:15px;border-radius:15px;background:rgba(255,255,255,.04);border:1px solid var(--brd);cursor:pointer;transition:all .22s var(--ease);text-align:left;color:var(--txt)}
+.quick-tile:hover{transform:translateY(-3px);border-color:rgba(139,92,246,.5);background:var(--grad-soft)}
+.quick-tile b{font-size:13.5px}
+.quick-tile span{font-size:11.5px;color:var(--muted)}
+.hist-item{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.05)}
+.hist-item:last-child{border-bottom:none}
+.hist-ic{width:34px;height:34px;border-radius:11px;background:rgba(139,92,246,.13);color:var(--vio-2);display:flex;align-items:center;justify-content:center;flex:none}
+.hist-item b{font-size:13.5px;font-weight:600}
+.hist-item time{font-size:11.5px;color:var(--muted-2)}
+.teaser{overflow:hidden;position:relative}
+.teaser::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(420px 200px at 85% 0%,rgba(245,158,11,.18),transparent 60%),
+  radial-gradient(420px 220px at 10% 100%,rgba(139,92,246,.22),transparent 60%);pointer-events:none}
+
+/* ---------- AI чат ---------- */
+.ai-layout{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.conv-list{display:flex;flex-direction:column;gap:6px;max-height:560px;overflow-y:auto}
+.conv-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid transparent;cursor:pointer;font-size:13px;color:var(--muted);transition:all .2s;width:100%;text-align:left}
+.conv-item:hover{color:var(--txt);border-color:var(--brd)}
+.conv-item.on{background:var(--grad-soft);border-color:rgba(139,92,246,.4);color:#fff}
+.conv-item .conv-del{margin-left:auto;opacity:0;color:var(--muted-2);background:none;border:none;cursor:pointer;padding:3px;border-radius:7px;display:flex}
+.conv-item:hover .conv-del{opacity:.8}
+.conv-item .conv-del:hover{color:var(--err);background:rgba(248,113,113,.12)}
+.chat-box{display:flex;flex-direction:column;height:calc(100vh - 215px);min-height:430px}
+.chat-msgs{flex:1;overflow-y:auto;padding:6px 4px 14px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:11px;max-width:88%}
+.msg-user{align-self:flex-end;flex-direction:row-reverse}
+.msg-ava{width:34px;height:34px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.msg-ava.ai{background:var(--grad);box-shadow:var(--sh-vio);color:#fff}
+.msg-ava.me{background:rgba(255,255,255,.09);border:1px solid var(--brd)}
+.msg-body{padding:12px 15px;border-radius:16px;font-size:14.5px;overflow-wrap:anywhere;min-width:0}
+.msg-user .msg-body{background:var(--grad);border-bottom-right-radius:6px;box-shadow:var(--sh-vio)}
+.msg-ai .msg-body{background:rgba(255,255,255,.05);border:1px solid var(--brd);border-bottom-left-radius:6px}
+.msg-body .md-h{font-weight:700;font-size:15px;margin:10px 0 4px;color:var(--vio-2)}
+.msg-body .md-p{margin:3px 0}
+.msg-body ul,.msg-body ol{margin:6px 0 6px 20px;display:flex;flex-direction:column;gap:3px}
+.msg-body .md-q{border-left:3px solid var(--vio);padding:2px 10px;margin:6px 0;color:var(--muted);background:rgba(139,92,246,.07);border-radius:0 8px 8px 0}
+.msg-body code.ic-c{background:rgba(139,92,246,.15);padding:1.5px 6px;border-radius:6px;font-size:13px;color:#c4b5fd}
+.codeblock{position:relative;margin:9px 0;background:#0a0a1c;border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+.codeblock pre{padding:13px 14px;overflow-x:auto;font-size:12.8px;line-height:1.5}
+.codeblock code{font-family:'Cascadia Code',Consolas,Monaco,monospace;color:#a5f3fc}
+.cb-copy{position:absolute;top:7px;right:8px;font-size:11px;padding:4px 9px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid var(--brd);color:var(--muted);cursor:pointer}
+.cb-copy:hover{color:#fff;background:rgba(139,92,246,.3)}
+.msg-body a{color:#93c5fd;text-decoration:underline}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);text-align:center;padding:20px}
+.chat-orb{width:74px;height:74px;border-radius:26px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-vio);animation:orbPulse 3s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{transform:scale(1);box-shadow:0 8px 30px rgba(139,92,246,.4)}50%{transform:scale(1.06);box-shadow:0 14px 44px rgba(139,92,246,.6)}}
+.chat-sugg{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+.chat-sugg button{font-size:12.5px;padding:8px 13px;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--brd);color:var(--muted);cursor:pointer;transition:all .2s}
+.chat-sugg button:hover{color:#fff;border-color:rgba(139,92,246,.5);background:var(--grad-soft)}
+.chat-composer{display:flex;gap:10px;align-items:flex-end;padding-top:12px;border-top:1px solid var(--brd)}
+.chat-composer .ta{min-height:46px;border-radius:16px}
+.chat-tools{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.quota-chip{font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;background:rgba(79,125,255,.13);color:#8fb0ff;border:1px solid rgba(79,125,255,.3)}
+.quota-chip.low{background:rgba(245,158,11,.13);color:var(--gold);border-color:rgba(245,158,11,.35)}
+.ai-notice{border-radius:var(--r-lg);padding:18px 20px;font-size:14px;line-height:1.65}
+.ai-notice .ic{color:var(--gold)}
+.typing{display:inline-flex;align-items:center;padding:6px 2px}
+
+/* ---------- Генератор тестов ---------- */
+.quiz-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px;border-radius:14px;border:1px solid var(--brd);background:rgba(255,255,255,.04);color:var(--txt);font-size:14.5px;cursor:pointer;transition:all .2s;margin-bottom:10px}
+.opt-btn:hover:not(:disabled){border-color:rgba(139,92,246,.5);background:var(--grad-soft);transform:translateX(3px)}
+.opt-letter{width:30px;height:30px;border-radius:9px;background:rgba(139,92,246,.15);color:var(--vio-2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex:none}
+.opt-btn.correct{border-color:rgba(52,211,153,.65);background:rgba(52,211,153,.13)}
+.opt-btn.correct .opt-letter{background:var(--ok);color:#04211a}
+.opt-btn.wrong{border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.12)}
+.opt-btn.wrong .opt-letter{background:var(--err);color:#2b0505}
+.opt-btn.dim{opacity:.5}
+.explain-box{border-left:3px solid var(--gold);background:rgba(245,158,11,.08);padding:11px 14px;border-radius:0 12px 12px 0;font-size:13.5px;color:#fcd9a0;margin:12px 0 4px}
+.quiz-progress{height:7px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:18px}
+.quiz-progress i{display:block;height:100%;background:var(--grad);border-radius:99px;transition:width .4s var(--ease)}
+.result-ring{width:150px;height:150px;margin:0 auto}
+.confetti{position:fixed;top:-12px;width:9px;height:16px;z-index:200;pointer-events:none;animation:confFall linear forwards}
+@keyframes confFall{to{transform:translateY(105vh) rotate(720deg);opacity:.6}}
+
+/* ---------- Flashcards ---------- */
+.deck-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.deck-card{cursor:pointer;overflow:hidden}
+.fc-stage{perspective:1200px;margin:10px auto}
+.fc{position:relative;width:100%;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .65s var(--ease)}
+.fc.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:26px;gap:12px;
+  border:1px solid rgba(139,92,246,.35);background:linear-gradient(160deg,rgba(139,92,246,.16),rgba(79,125,255,.1)),var(--panel);box-shadow:var(--sh)}
+.fc-face.back{transform:rotateY(180deg);border-color:rgba(245,158,11,.4);background:linear-gradient(160deg,rgba(245,158,11,.13),rgba(139,92,246,.1)),var(--panel)}
+.fc-face .fc-label{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.fc-face .fc-text{font-size:clamp(17px,2.4vw,23px);font-weight:700;line-height:1.4;overflow-wrap:anywhere}
+.fc-hint{font-size:11.5px;color:var(--muted-2)}
+.fc-actions{display:flex;gap:12px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.mini-card{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--brd);font-size:13.5px;margin-bottom:8px}
+.mini-card .kn{margin-left:auto;flex:none}
+
+/* ---------- English ---------- */
+.etabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.word-row{display:flex;align-items:center;gap:13px;padding:13px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--brd);margin-bottom:9px;transition:border-color .2s;flex-wrap:wrap}
+.word-row:hover{border-color:var(--brd-2)}
+.word-row.learned{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)}
+.word-en{font-weight:800;font-size:15.5px;min-width:120px}
+.word-tr{color:var(--muted);font-size:14px;flex:1;min-width:120px}
+.word-lv{font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.5px}
+.lv-A1{background:rgba(52,211,153,.14);color:var(--ok)}
+.lv-A2{background:rgba(79,125,255,.15);color:#8fb0ff}
+.lv-B1{background:rgba(139,92,246,.16);color:var(--vio-2)}
+.lv-B2{background:rgba(245,158,11,.14);color:var(--gold)}
+.lv-C1{background:rgba(248,113,113,.14);color:var(--err)}
+.word-ex{width:100%;font-size:12.8px;color:var(--muted-2);font-style:italic;padding-left:2px}
+.lock-overlay{position:relative}
+.lock-overlay::after{content:'';position:absolute;inset:0;border-radius:inherit;background:rgba(5,5,16,.72);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:2}
+
+/* ---------- Планировщик ---------- */
+.plan-card{margin-bottom:14px}
+.task-item{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--brd);margin-bottom:8px;transition:opacity .2s}
+.task-item.done{opacity:.55}
+.task-item.done .task-title{text-decoration:line-through}
+.task-check{width:21px;height:21px;border-radius:7px;border:2px solid var(--brd-2);background:transparent;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .2s;padding:0}
+.task-check svg{width:13px;height:13px;opacity:0}
+.task-item.done .task-check{background:var(--grad);border-color:transparent}
+.task-item.done .task-check svg{opacity:1}
+.task-day{font-size:10.5px;font-weight:800;color:var(--vio-2);background:rgba(139,92,246,.14);padding:2px 8px;border-radius:99px;flex:none;margin-top:3px}
+
+/* ---------- Статистика ---------- */
+.heatmap{display:grid;grid-template-columns:repeat(15,1fr);gap:5px}
+.hm-cell{aspect-ratio:1;border-radius:5px;background:rgba(255,255,255,.05);min-width:0}
+.cmp-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid rgba(255,255,255,.05)}
+.cmp-row:last-child{border:none}
+.cmp-delta{font-weight:800;font-size:14px}
+.cmp-delta.up{color:var(--ok)}
+.cmp-delta.down{color:var(--err)}
+canvas.chart{width:100%;height:230px;display:block}
+
+/* ---------- Premium ---------- */
+.pr-hero{text-align:center;padding:46px 20px 30px;position:relative;overflow:hidden;border-radius:26px;margin-bottom:20px}
+.pr-hero h1{font-size:clamp(30px,5.4vw,52px);letter-spacing:-.5px}
+.pr-hero p{color:var(--muted);max-width:560px;margin:12px auto 0;font-size:15px}
+.pr-cards{display:grid;grid-template-columns:repeat(2,minmax(0,420px));gap:18px;justify-content:center;margin-bottom:26px}
+.price-card{padding:26px;border-radius:22px;position:relative;overflow:hidden}
+.price-card .price{font-size:38px;font-weight:900;margin:10px 0 2px}
+.price-card .per{color:var(--muted);font-size:13px}
+.price-feats{margin:16px 0 20px;display:flex;flex-direction:column;gap:9px}
+.price-feats li{list-style:none;display:flex;gap:10px;align-items:flex-start;font-size:13.8px;color:var(--muted)}
+.price-feats li .ic{color:var(--ok);margin-top:2px;width:17px;height:17px}
+.price-feats li.no{opacity:.5}
+.price-feats li.no .ic{color:var(--err)}
+.crown-badge{position:absolute;top:14px;right:14px}
+.crown-float{position:absolute;top:24px;left:50%;transform:translateX(-50%);width:64px;height:64px;color:var(--gold);filter:drop-shadow(0 6px 20px rgba(245,158,11,.5));animation:floatY 3.5s ease-in-out infinite}
+@keyframes floatY{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-9px)}}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13.8px}
+.cmp-table th,.cmp-table td{padding:12px 14px;text-align:center;border-bottom:1px solid rgba(255,255,255,.06)}
+.cmp-table th:first-child,.cmp-table td:first-child{text-align:left;color:var(--muted)}
+.cmp-table th{font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted-2)}
+.cmp-table .yes{color:var(--ok)}
+.cmp-table .no-c{color:var(--err);opacity:.6}
+.cmp-table tr:hover td{background:rgba(139,92,246,.05)}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r-lg)}
+
+/* ---------- Модалки и тосты ---------- */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(3,3,10,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:18px;animation:fadeIn .25s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{width:100%;max-width:470px;border-radius:22px;padding:26px;background:linear-gradient(170deg,#151532,#0c0c22);border:1px solid var(--brd-2);box-shadow:0 30px 80px rgba(0,0,0,.7);animation:modalIn .3s var(--ease);max-height:88vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:none}}
+.modal h3{font-size:19px;margin-bottom:9px;display:flex;align-items:center;gap:11px}
+.modal p{color:var(--muted);font-size:14px}
+.modal-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.modal-actions .btn{flex:1;min-width:130px}
+.toast-root{position:fixed;top:18px;right:18px;z-index:300;display:flex;flex-direction:column;gap:10px;max-width:min(380px,90vw)}
+.toast{display:flex;gap:11px;align-items:flex-start;padding:13px 16px;border-radius:14px;font-size:13.8px;background:linear-gradient(170deg,#191940,#101028);border:1px solid var(--brd-2);box-shadow:var(--sh);animation:toastIn .35s var(--ease)}
+.toast.out{animation:toastOut .3s forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateX(40px)}}
+.toast .ic{margin-top:1px}
+.toast.success .ic{color:var(--ok)}
+.toast.error .ic{color:var(--err)}
+.toast.gold .ic{color:var(--gold)}
+
+/* бургер и мобильный оверлей */
+.sb-overlay{display:none;position:fixed;inset:0;z-index:45;background:rgba(3,3,10,.6);backdrop-filter:blur(3px)}
+
+/* ---------- адаптивность ---------- */
+@media (max-width:1100px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .ai-layout{grid-template-columns:1fr}
+  .conv-side{order:2}
+  .conv-list{max-height:220px}
+}
+@media (max-width:920px){
+  .sidebar{transform:translateX(-105%);box-shadow:24px 0 60px rgba(0,0,0,.5)}
+  .sidebar.open{transform:none}
+  .sb-overlay.show{display:block}
+  .topbar{display:flex}
+  .main{margin-left:0}
+  .dash-cols{grid-template-columns:1fr}
+  .quick-grid{grid-template-columns:repeat(2,1fr)}
+  .pr-cards{grid-template-columns:minmax(0,460px)}
+  .quiz-form-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .content{padding:18px 14px 60px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-num{font-size:22px}
+  .quick-grid{grid-template-columns:1fr 1fr;gap:9px}
+  .quick-tile{padding:12px}
+  .quick-tile span{display:none}
+  .msg{max-width:96%}
+  .chat-box{height:calc(100vh - 240px)}
+  .pr-cards{grid-template-columns:1fr}
+  .heatmap{grid-template-columns:repeat(10,1fr)}
+  .modal{padding:20px}
+  .card{padding:17px;border-radius:17px}
+  .ring{width:96px;height:96px}
+  .btn-lg{padding:13px 22px;font-size:15px}
+  .segmented{width:100%;justify-content:stretch}
+  .segmented button{flex:1;justify-content:center;padding:8px 8px}
+  .word-en{min-width:100px}
+}
+@media (max-width:380px){
+  .stat-grid{grid-template-columns:1fr}
+  .quick-grid{grid-template-columns:1fr}
+}
+/* доступность: уменьшенное движение */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#4f7dff"/>
+</linearGradient>
+<linearGradient id="ringGradGold" x1="0" y1="0" x2="1" y2="1">
+  <stop offset="0" stop-color="#f59e0b"/><stop offset="1" stop-color="#fbbf24"/>
+</linearGradient>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="i-bot" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-quiz" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-cards" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+<symbol id="i-plan" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></symbol>
+<symbol id="i-crown" viewBox="0 0 24 24"><path d="M3 17l1.6-9L10 12l2-7 2 7 5.4-4L21 17z"/><path d="M5 21h14"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-checkc" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></symbol>
+<symbol id="i-xc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 22c3.9 0 7-2.9 7-6.7 0-3.6-2.3-5.7-3.7-8.3-.6-1.1-1-2.2-1.2-3.5-1.9 1.3-3 3.1-3.1 5.5-1.4-.8-2.3-2-2.6-3.9C6 8.4 5 11.2 5 13.5 5 19.1 8.1 22 12 22z"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+<symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9z"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 8l5-5 5 5M12 3v12"/></symbol>
+<symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14L21 3"/></symbol>
+<symbol id="i-grad" viewBox="0 0 24 24"><path d="M22 9L12 4 2 9l10 5z"/><path d="M6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5"/><path d="M22 9v6"/></symbol>
+<symbol id="i-tg" viewBox="0 0 24 24"><path class="ic-f" d="M21.6 3.1c-.3-.3-.8-.4-1.3-.2L2.9 10.2c-1 .4-1 1.8.1 2.2l4.6 1.5 1.8 5.5c.3.9 1.5 1.2 2.2.5l2.5-2.6 4.3 3.2c.9.7 2.2.2 2.4-.9l2-14.5c.1-.5 0-1.2-.2-2z" fill="currentColor" stroke="none"/></symbol>
+</defs>
+</svg>
+
+<div class="bg"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+<div class="bg-grid"></div>
+<canvas id="bg-canvas"></canvas>
+
+<div class="app">
+<!-- ===== Сайдбар ===== -->
+<aside class="sidebar" id="sidebar" aria-label="Навигация">
+  <div class="sb-logo">
+    <div class="logo-cube"><div class="cube">
+      <div class="face f1"><svg class="ic"><use href="#i-spark"/></svg></div>
+      <div class="face f2"><svg class="ic"><use href="#i-grad"/></svg></div>
+    </div></div>
+    <div>
+      <div class="sb-name"><b>StudyFlow</b> <span>AI</span></div>
+      <div class="sb-sub">учись умнее</div>
+    </div>
+  </div>
+  <nav class="sb-nav" id="sb-nav">
+    <button class="nav-item on" data-nav="dashboard"><svg class="ic"><use href="#i-home"/></svg>Главная</button>
+    <button class="nav-item" data-nav="ai"><svg class="ic"><use href="#i-bot"/></svg>AI Assistant</button>
+    <button class="nav-item" data-nav="quiz"><svg class="ic"><use href="#i-quiz"/></svg>Генератор тестов</button>
+    <button class="nav-item" data-nav="cards"><svg class="ic"><use href="#i-cards"/></svg>Flashcards</button>
+    <button class="nav-item" data-nav="english"><svg class="ic"><use href="#i-book"/></svg>English</button>
+    <button class="nav-item" data-nav="planner"><svg class="ic"><use href="#i-plan"/></svg>Планировщик</button>
+    <button class="nav-item" data-nav="stats"><svg class="ic"><use href="#i-chart"/></svg>Статистика</button>
+    <button class="nav-item" data-nav="premium">Premium<span class="nav-dot" id="nav-dot-premium" hidden>HOT</span><svg class="ic" style="color:var(--gold)"><use href="#i-crown"/></svg></button>
+    <button class="nav-item" data-nav="settings"><svg class="ic"><use href="#i-gear"/></svg>Настройки</button>
+  </nav>
+  <div class="sb-foot">
+    <button class="sb-plan" id="sb-plan-btn">
+      <svg class="ic" style="color:var(--gold)"><use href="#i-crown"/></svg>
+      <div style="flex:1;min-width:0"><div style="font-weight:700;color:var(--txt)">Тариф: <span class="js-plan-name">Free</span></div>
+      <div class="small muted js-plan-hint" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">10 сообщений ИИ в день</div></div>
+      <svg class="ic ic-sm muted"><use href="#i-chev"/></svg>
+    </button>
+    <div class="sb-mode"><span class="mode-dot" id="mode-dot"></span><span id="mode-text">Локальный режим</span></div>
+  </div>
+</aside>
+<div class="sb-overlay" id="sb-overlay"></div>
+
+<div class="main">
+  <!-- ===== Мобильный топбар ===== -->
+  <header class="topbar">
+    <button class="icon-btn" id="burger" aria-label="Меню"><svg class="ic"><use href="#i-menu"/></svg></button>
+    <div class="row" style="gap:8px"><svg class="ic" style="color:var(--vio-2)"><use href="#i-spark"/></svg><b>StudyFlow <span class="grad-txt">AI</span></b></div>
+    <div class="spacer"></div>
+    <span class="badge js-plan-badge">Free</span>
+  </header>
+
+  <main class="content" id="content">
+
+  <!-- ===== ДАШБОРД ===== -->
+  <section class="view active" id="view-dashboard">
+    <div class="view-head row-between">
+      <div class="row" style="gap:14px">
+        <span class="greet-emoji" id="greet-emoji">👋</span>
+        <div><h1 id="greet-title">Привет!</h1><p class="muted small" id="greet-date"></p></div>
+      </div>
+      <div class="row" style="gap:9px">
+        <span class="badge" title="Дней подряд с активностью"><svg class="ic ic-sm" style="color:var(--gold)"><use href="#i-flame"/></svg><span id="streak-val">0</span></span>
+        <span class="badge js-plan-badge">Free</span>
+      </div>
+    </div>
+
+    <div class="dash-cols">
+      <div class="card tilt">
+        <div class="row-between mb-14"><h3>Общий прогресс</h3><svg class="ic muted"><use href="#i-target"/></svg></div>
+        <div class="ring-wrap">
+          <div class="ring">
+            <svg width="118" height="118" viewBox="0 0 118 118">
+              <circle class="bgc" cx="59" cy="59" r="52"/>
+              <circle class="fgc" id="dash-ring" cx="59" cy="59" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="ring-val"><span id="dash-ring-pct">0%</span><small>прогресс</small></div>
+          </div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:11px">
+            <div><div class="row-between small" style="margin-bottom:4px"><span class="muted">Темы</span><b id="pb-topics-txt">0/10</b></div><div class="pbar"><i id="pb-topics"></i></div></div>
+            <div><div class="row-between small" style="margin-bottom:4px"><span class="muted">Тесты</span><b id="pb-tests-txt">0/20</b></div><div class="pbar"><i id="pb-tests"></i></div></div>
+            <div><div class="row-between small" style="margin-bottom:4px"><span class="muted">Слова</span><b id="pb-words-txt">0/100</b></div><div class="pbar"><i id="pb-words"></i></div></div>
+            <div><div class="row-between small" style="margin-bottom:4px"><span class="muted">Карточки</span><b id="pb-cards-txt">0/50</b></div><div class="pbar"><i id="pb-cards"></i></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card tilt">
+        <div class="row-between mb-14"><h3>Ежедневная цель</h3><svg class="ic" style="color:var(--gold)"><use href="#i-flame"/></svg></div>
+        <div style="font-size:34px;font-weight:800" id="goal-num">0 <span class="muted" style="font-size:16px;font-weight:600">/ 30 очков</span></div>
+        <div class="pbar mt-14"><i id="dash-goal-bar" style="width:0%"></i></div>
+        <p class="small muted mt-8" id="dash-goal-text">Секретарь: тест +15, слово +3, карточка +2, задача +10.</p>
+        <div class="row mt-14" style="gap:14px;flex-wrap:wrap">
+          <span class="chip"><svg class="ic ic-sm" style="color:var(--vio-2)"><use href="#i-bot"/></svg><span id="goal-ai">0 ИИ</span></span>
+          <span class="chip"><svg class="ic ic-sm" style="color:#8fb0ff"><use href="#i-book"/></svg><span id="goal-words">0 слов</span></span>
+          <span class="chip"><svg class="ic ic-sm" style="color:var(--gold)"><use href="#i-cards"/></svg><span id="goal-cards">0 карт.</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="card tilt stat-card"><div class="ic-wrap vio tilt-in"><svg class="ic ic-lg"><use href="#i-grad"/></svg></div><div class="stat-num" id="stat-topics">0</div><div class="stat-lbl" id="stat-topics-lbl">изученных тем</div></div>
+      <div class="card tilt stat-card"><div class="ic-wrap blue tilt-in"><svg class="ic ic-lg"><use href="#i-quiz"/></svg></div><div class="stat-num" id="stat-tests">0</div><div class="stat-lbl" id="stat-tests-lbl">тестов пройдено</div></div>
+      <div class="card tilt stat-card"><div class="ic-wrap ok tilt-in"><svg class="ic ic-lg"><use href="#i-book"/></svg></div><div class="stat-num" id="stat-words">0</div><div class="stat-lbl" id="stat-words-lbl">английских слов</div></div>
+      <div class="card tilt stat-card"><div class="ic-wrap gold tilt-in"><svg class="ic ic-lg"><use href="#i-cards"/></svg></div><div class="stat-num" id="stat-cards">0</div><div class="stat-lbl" id="stat-cards-lbl">карточек выучено</div></div>
+    </div>
+
+    <h3 class="mb-14">Быстрый доступ</h3>
+    <div class="quick-grid mb-20">
+      <button class="quick-tile" data-go="ai"><svg class="ic ic-lg" style="color:var(--vio-2)"><use href="#i-bot"/></svg><b>AI Assistant</b><span>Спросить репетитора</span></button>
+      <button class="quick-tile" data-go="quiz"><svg class="ic ic-lg" style="color:#8fb0ff"><use href="#i-quiz"/></svg><b>Новый тест</b><span>Сгенерировать с ИИ</span></button>
+      <button class="quick-tile" data-go="cards"><svg class="ic ic-lg" style="color:var(--gold)"><use href="#i-cards"/></svg><b>Flashcards</b><span>Повторить карточки</span></button>
+      <button class="quick-tile" data-go="english"><svg class="ic ic-lg" style="color:var(--ok)"><use href="#i-book"/></svg><b>English</b><span>Учить слова</span></button>
+      <button class="quick-tile" data-go="planner"><svg class="ic ic-lg" style="color:#7dd3fc"><use href="#i-plan"/></svg><b>Планировщик</b><span>План от ИИ</span></button>
+      <button class="quick-tile" data-go="stats"><svg class="ic ic-lg" style="color:var(--vio-2)"><use href="#i-chart"/></svg><b>Статистика</b><span>Мой прогресс</span></button>
+    </div>
+
+    <div class="dash-cols">
+      <div class="card">
+        <div class="row-between mb-14"><h3>Последние действия</h3><button class="btn btn-ghost btn-sm" data-go="stats">Вся история</button></div>
+        <div id="dash-history"></div>
+      </div>
+      <div class="card teaser" id="dash-teaser">
+        <h3 class="gold-txt mb-14" style="display:flex;align-items:center;gap:10px"><svg class="ic"><use href="#i-crown"/></svg><span id="teaser-title">StudyFlow Premium</span></h3>
+        <div id="teaser-body"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AI ASSISTANT ===== -->
+  <section class="view" id="view-ai">
+    <div class="view-head">
+      <h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:var(--vio-2)"><use href="#i-bot"/></svg>AI Assistant</h1>
+      <p>Умный репетитор: математика, английский, история, физика и другие предметы. Объяснит, решит, подготовит к контрольной.</p>
+    </div>
+    <div class="ai-layout">
+      <div class="card conv-side" style="padding:14px">
+        <button class="btn btn-primary" id="chat-new" style="width:100%;margin-bottom:12px"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Новый диалог</button>
+        <div class="conv-list" id="chat-convs"></div>
+      </div>
+      <div class="card" style="padding:16px 18px">
+        <div class="chat-tools">
+          <span class="quota-chip" id="chat-quota">— сообщений осталось</span>
+          <div class="segmented" id="chat-depth" title="Глубина ответа">
+            <button data-depth="brief">Кратко</button>
+            <button data-depth="standard" class="on">Стандарт</button>
+            <button data-depth="expert">Эксперт <svg class="ic ic-sm" style="width:12px;height:12px;color:var(--gold)"><use href="#i-crown"/></svg></button>
+          </div>
+          <div class="spacer"></div>
+          <button class="icon-btn" id="chat-export" title="Экспорт диалога (Premium)"><svg class="ic ic-sm"><use href="#i-down"/></svg></button>
+        </div>
+        <div class="chat-msgs" id="chat-msgs"></div>
+        <div class="chat-composer">
+          <textarea class="ta" id="chat-input" rows="1" placeholder="Спроси что угодно… Enter — отправить, Shift+Enter — новая строка"></textarea>
+          <button class="btn btn-primary" id="chat-send" style="min-width:52px;height:46px" aria-label="Отправить"><svg class="ic"><use href="#i-send"/></svg></button>
+          <button class="btn btn-danger" id="chat-stop" style="min-width:52px;height:46px;display:none" aria-label="Остановить"><svg class="ic"><use href="#i-x"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ГЕНЕРАТОР ТЕСТОВ ===== -->
+  <section class="view" id="view-quiz">
+    <div class="view-head">
+      <h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:#8fb0ff"><use href="#i-quiz"/></svg>Генератор тестов</h1>
+      <p>Выбери предмет, тему и сложность — ИИ составит тест с вариантами ответов и объяснениями ошибок.</p>
+    </div>
+    <div class="card mb-20" id="quiz-form">
+      <div class="quiz-form-grid">
+        <div class="field"><label class="lbl" for="q-subject">Предмет</label>
+          <select class="sel" id="q-subject">
+            <option>Математика</option><option>Алгебра</option><option>Геометрия</option><option>Физика</option>
+            <option>Химия</option><option>Биология</option><option>История</option><option>География</option>
+            <option>Английский язык</option><option>Информатика</option><option>Русский язык</option>
+            <option>Литература</option><option>Обществознание</option>
+          </select>
+        </div>
+        <div class="field"><label class="lbl" for="q-topic">Тема</label>
+          <input class="inp" id="q-topic" list="q-topics" placeholder="Например: квадратные уравнения" maxlength="120">
+          <datalist id="q-topics"></datalist>
+        </div>
+      </div>
+      <div class="row-between" style="gap:14px;flex-wrap:wrap">
+        <div class="row" style="gap:14px;flex-wrap:wrap">
+          <div><span class="lbl">Сложность</span>
+            <div class="segmented" id="quiz-diff">
+              <button data-diff="1">Легко</button><button data-diff="2" class="on">Средне</button><button data-diff="3">Сложно</button>
+            </div>
+          </div>
+          <div><span class="lbl">Вопросов</span>
+            <div class="segmented" id="quiz-count">
+              <button data-count="5" class="on">5</button><button data-count="10">10</button><button data-count="15">15</button>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="gap:12px">
+          <span class="quota-chip" id="quiz-quota">— генераций осталось</span>
+          <button class="btn btn-primary btn-lg" id="quiz-gen"><svg class="ic"><use href="#i-zap"/></svg>Сгенерировать тест</button>
+        </div>
+      </div>
+    </div>
+    <div class="ai-notice grad-brd mb-20" id="quiz-ai-notice" hidden>
+      <div class="row mb-14"><svg class="ic"><use href="#i-info"/></svg><b>ИИ не подключён</b></div>
+      <div id="quiz-ai-notice-body"></div>
+    </div>
+    <div id="quiz-run" hidden></div>
+    <div id="quiz-result" hidden></div>
+  </section>
+
+  <!-- ===== FLASHCARDS ===== -->
+  <section class="view" id="view-cards">
+    <div class="view-head row-between">
+      <div><h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:var(--gold)"><use href="#i-cards"/></svg>Flashcards</h1>
+      <p>Карточки для запоминания: вопрос на одной стороне, ответ — на другой.</p></div>
+      <span class="chip" id="cards-total-chip">0 карточек</span>
+    </div>
+    <div class="card mb-20">
+      <div class="row" style="gap:12px;flex-wrap:wrap">
+        <input class="inp" id="deck-title" placeholder="Название новой колоды, например: История — Древний Рим" maxlength="80" style="flex:1;min-width:220px">
+        <button class="btn btn-primary" id="deck-create"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Создать колоду</button>
+        <div class="row" style="gap:8px">
+          <input class="inp" id="cards-ai-topic" placeholder="Тема для ИИ…" maxlength="80" style="width:190px">
+          <button class="btn btn-gold" id="cards-ai-gen" title="Сгенерировать колоду с ИИ (Premium)"><svg class="ic ic-sm"><use href="#i-spark"/></svg>ИИ-колода</button>
+        </div>
+      </div>
+      <p class="small muted mt-8" id="cards-limit-hint">На тарифе Free — до 30 карточек. Premium снимает ограничение.</p>
+    </div>
+    <div class="deck-grid" id="cards-decks"></div>
+    <div id="cards-study" hidden></div>
+  </section>
+
+  <!-- ===== ENGLISH ===== -->
+  <section class="view" id="view-english">
+    <div class="view-head row-between">
+      <div><h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:var(--ok)"><use href="#i-book"/></svg>English</h1>
+      <p>Слова по уровням, карточки, тесты и свои словари.</p></div>
+      <span class="chip" id="en-learned-chip"><svg class="ic ic-sm" style="color:var(--ok)"><use href="#i-checkc"/></svg><b id="en-learned-count">0</b>&nbsp;<span id="en-learned-lbl">слов</span> выучено</span>
+    </div>
+    <div class="etabs">
+      <button class="chip on" data-etab="words">Слова</button>
+      <button class="chip" data-etab="mine">Мои слова</button>
+      <button class="chip" data-etab="test">Тест на слова</button>
+      <button class="chip" data-etab="packs">Premium-наборы <svg class="ic ic-sm" style="width:12px;height:12px;color:var(--gold)"><use href="#i-crown"/></svg></button>
+    </div>
+    <div class="etab" id="etab-words">
+      <div class="row mb-14" style="gap:10px;flex-wrap:wrap">
+        <div class="row" id="en-levels" style="gap:7px;flex-wrap:wrap"></div>
+        <div class="spacer"></div>
+        <div style="position:relative;min-width:200px;flex:1;max-width:280px">
+          <svg class="ic ic-sm muted" style="position:absolute;left:12px;top:11px"><use href="#i-search"/></svg>
+          <input class="inp" id="en-search" placeholder="Поиск слова…" style="padding-left:38px">
+        </div>
+        <button class="chip" id="en-cards-start" title="Выучить эти слова в режиме 3D-карточек"><svg class="ic ic-sm" style="color:var(--gold)"><use href="#i-cards"/></svg>Учить карточками</button>
+      </div>
+      <div id="en-list"></div>
+    </div>
+    <div class="etab" id="etab-mine" hidden>
+      <div class="card mb-20">
+        <h3 class="mb-14">Добавить своё слово</h3>
+        <div class="quiz-form-grid" style="grid-template-columns:1fr 1fr 120px">
+          <div class="field"><label class="lbl" for="en-add-en">English</label><input class="inp" id="en-add-en" placeholder="achieve" maxlength="40"></div>
+          <div class="field"><label class="lbl" for="en-add-ru">Перевод</label><input class="inp" id="en-add-ru" placeholder="достигать" maxlength="60"></div>
+          <div class="field"><label class="lbl" for="en-add-level">Уровень</label>
+            <select class="sel" id="en-add-level"><option>A1</option><option>A2</option><option selected>B1</option><option>B2</option><option>C1</option></select></div>
+        </div>
+        <div class="field"><label class="lbl" for="en-add-ex">Пример (необязательно)</label><input class="inp" id="en-add-ex" placeholder="She achieved her goal." maxlength="140"></div>
+        <button class="btn btn-primary" id="en-add-btn"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Добавить слово</button>
+      </div>
+      <div id="en-mine-list"></div>
+    </div>
+    <div class="etab" id="etab-test" hidden>
+      <div class="card mb-20">
+        <h3 class="mb-14">Тест на знание слов</h3>
+        <div class="row" style="gap:14px;flex-wrap:wrap">
+          <div><span class="lbl">Уровень</span><select class="sel" id="en-test-level" style="width:130px">
+            <option value="">Все</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option></select></div>
+          <div><span class="lbl">Направление</span>
+            <div class="segmented" id="en-test-dir"><button data-dir="en-ru" class="on">EN → RU</button><button data-dir="ru-en">RU → EN</button></div></div>
+          <div class="spacer"></div>
+          <button class="btn btn-primary btn-lg" id="en-test-start" style="align-self:flex-end"><svg class="ic"><use href="#i-zap"/></svg>Начать тест</button>
+        </div>
+        <p class="small muted mt-8">10 вопросов с вариантами. Результаты идут в статистику.</p>
+      </div>
+      <div id="en-test-run"></div>
+    </div>
+    <div class="etab" id="etab-packs" hidden><div id="en-packs"></div></div>
+    <div id="en-cards-study" hidden></div>
+  </section>
+
+  <!-- ===== ПЛАНИРОВЩИК ===== -->
+  <section class="view" id="view-planner">
+    <div class="view-head">
+      <h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:#7dd3fc"><use href="#i-plan"/></svg>Планировщик обучения</h1>
+      <p>Большая цель превращается в план из небольших задач. Отмечай выполненное и следи за прогрессом.</p>
+    </div>
+    <div class="dash-cols mb-20">
+      <div class="card grad-brd" id="planner-ai-card">
+        <h3 class="mb-14 row" style="gap:10px"><svg class="ic" style="color:var(--vio-2)"><use href="#i-spark"/></svg>Персональный план от ИИ <span class="pill"><svg class="ic ic-sm" style="width:11px;height:11px;color:var(--gold)"><use href="#i-crown"/></svg>Premium</span></h3>
+        <div class="field"><label class="lbl" for="pl-goal">Что хочешь изучить</label><input class="inp" id="pl-goal" placeholder="Например: подготовиться к ОГЭ по математике" maxlength="200"></div>
+        <div class="quiz-form-grid">
+          <div class="field"><label class="lbl" for="pl-days">Сколько дней на подготовку</label><input class="inp" id="pl-days" type="number" min="2" max="120" value="7"></div>
+          <div class="field"><label class="lbl" for="pl-deadline">Дедлайн (необязательно)</label><input class="inp" id="pl-deadline" type="date"></div>
+        </div>
+        <div class="field"><label class="lbl" for="pl-level">Уровень</label>
+          <select class="sel" id="pl-level"><option>Начальный</option><option selected>Средний</option><option>Продвинутый</option></select></div>
+        <button class="btn btn-gold btn-lg" id="pl-ai-gen" style="width:100%"><svg class="ic"><use href="#i-spark"/></svg>Сгенерировать план</button>
+      </div>
+      <div class="card">
+        <h3 class="mb-14">Своя цель (вручную)</h3>
+        <div class="field"><label class="lbl" for="pl-title">Название плана</label><input class="inp" id="pl-title" placeholder="Например: Повторение химии за 8 класс" maxlength="120"></div>
+        <div class="field"><label class="lbl" for="pl-deadline2">Дедлайн (необязательно)</label><input class="inp" id="pl-deadline2" type="date"></div>
+        <button class="btn btn-primary" id="pl-create" style="width:100%"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Создать план</button>
+        <p class="small muted mt-14">Дальше задачи можно добавлять внутри плана.</p>
+      </div>
+    </div>
+    <div id="planner-list"></div>
+  </section>
+
+  <!-- ===== СТАТИСТИКА ===== -->
+  <section class="view" id="view-stats">
+    <div class="view-head">
+      <h1 class="row" style="gap:12px"><svg class="ic ic-lg" style="color:var(--vio-2)"><use href="#i-chart"/></svg>Статистика</h1>
+      <p>Прогресс обучения, точность ответов и история занятий.</p>
+    </div>
+    <div class="stat-grid mb-20">
+      <div class="card stat-card"><div class="ic-wrap ok"><svg class="ic ic-lg"><use href="#i-book"/></svg></div><div class="stat-num" id="st-words">0</div><div class="stat-lbl" id="st-words-lbl">слов выучено</div></div>
+      <div class="card stat-card"><div class="ic-wrap blue"><svg class="ic ic-lg"><use href="#i-quiz"/></svg></div><div class="stat-num" id="st-tests">0</div><div class="stat-lbl" id="st-tests-lbl">тестов пройдено</div></div>
+      <div class="card stat-card"><div class="ic-wrap vio"><svg class="ic ic-lg"><use href="#i-target"/></svg></div><div class="stat-num" id="st-acc">—</div><div class="stat-lbl">правильных ответов</div></div>
+      <div class="card stat-card"><div class="ic-wrap gold"><svg class="ic ic-lg"><use href="#i-flame"/></svg></div><div class="stat-num" id="st-streak">0</div><div class="stat-lbl">дней подряд</div></div>
+    </div>
+    <div class="card mb-20">
+      <h3 class="mb-14">Активность за 14 дней</h3>
+      <canvas class="chart" id="ch-activity" height="230"></canvas>
+    </div>
+    <div class="dash-cols mb-20">
+      <div class="card">
+        <h3 class="mb-14">Неделя по типам занятий</h3>
+        <canvas class="chart" id="ch-week" height="230"></canvas>
+      </div>
+      <div class="card" style="position:relative" id="st-cmp-card">
+        <h3 class="mb-14">Эта неделя vs прошлая <span class="pill"><svg class="ic ic-sm" style="width:11px;height:11px;color:var(--gold)"><use href="#i-crown"/></svg>Premium</span></h3>
+        <div id="st-cmp"></div>
+      </div>
+    </div>
+    <div class="card mb-20" style="position:relative" id="st-heat-card">
+      <h3 class="mb-14">Календарь активности (30 дней) <span class="pill"><svg class="ic ic-sm" style="width:11px;height:11px;color:var(--gold)"><use href="#i-crown"/></svg>Premium</span></h3>
+      <div class="heatmap" id="st-heatmap"></div>
+    </div>
+    <div class="dash-cols">
+      <div class="card">
+        <h3 class="mb-14">Изученные темы</h3>
+        <div id="st-topics" class="row" style="gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="card">
+        <h3 class="mb-14">История обучения</h3>
+        <div id="st-history" style="max-height:340px;overflow-y:auto"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PREMIUM ===== -->
+  <section class="view" id="view-premium">
+    <div class="card teaser pr-hero grad-brd-gold mb-20" style="padding-bottom:34px">
+      <svg class="ic crown-float" style="width:64px;height:64px"><use href="#i-crown"/></svg>
+      <h1 style="margin-top:44px">StudyFlow <span class="gold-txt">Premium</span></h1>
+      <p>Максимальные лимиты ИИ, персональные планы, ИИ-карточки, озвучка слов и расширенная статистика.</p>
+      <div class="mt-14" id="pr-current"></div>
+    </div>
+    <div class="pr-cards mb-20">
+      <div class="card price-card tilt">
+        <h3>Free</h3>
+        <div class="price">0 ₽</div><div class="per">навсегда</div>
+        <ul class="price-feats">
+          <li><svg class="ic"><use href="#i-check"/></svg>10 сообщений AI Assistant в день</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>5 генераций тестов в день</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Flashcards до 30 карточек</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Базовое изучение английского</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Базовая статистика</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Планировщик (вручную)</li>
+          <li class="no"><svg class="ic"><use href="#i-x"/></svg>Эксперт-режим ИИ и ИИ-планы</li>
+          <li class="no"><svg class="ic"><use href="#i-x"/></svg>ИИ-карточки, озвучка, Premium-наборы</li>
+          <li class="no"><svg class="ic"><use href="#i-x"/></svg>Расширенная статистика</li>
+        </ul>
+        <button class="btn btn-ghost" data-nav="dashboard" style="width:100%">Текущий тариф</button>
+      </div>
+      <div class="card price-card tilt grad-brd-gold">
+        <span class="badge badge-premium crown-badge">РЕКОМЕНДУЕМ</span>
+        <h3 class="gold-txt" style="display:flex;gap:10px;align-items:center"><svg class="ic"><use href="#i-crown"/></svg>Premium</h3>
+        <div class="price">299 ₽</div><div class="per">в месяц · или 1 990 ₽ в год (−44%)</div>
+        <ul class="price-feats">
+          <li><svg class="ic"><use href="#i-check"/></svg>100 сообщений AI Assistant в день</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>50 генераций тестов в день</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Эксперт-режим AI Assistant</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Персональные планы обучения с ИИ</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>ИИ-генерация карточек по любой теме</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Неограниченные Flashcards</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Озвучка слов + Premium-наборы английского</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Расширенная статистика и сравнение недель</li>
+          <li><svg class="ic"><use href="#i-check"/></svg>Приоритетный доступ к новым функциям</li>
+        </ul>
+        <a class="btn btn-gold btn-lg js-buy" href="https://t.me/vnepl" target="_blank" rel="noopener noreferrer" style="width:100%">
+          <svg class="ic"><use href="#i-tg"/></svg>Получить Premium</a>
+        <p class="small muted mt-8 center">Оплата через Telegram: напишите <a href="https://t.me/vnepl" target="_blank" rel="noopener noreferrer">@vnepl</a> — получите промокод и активируйте его ниже.</p>
+      </div>
+    </div>
+    <div class="card grad-brd mb-20" id="pr-promo-card">
+      <h3 class="mb-14">У меня есть промокод</h3>
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <input class="inp" id="pr-code" placeholder="Введите промокод" maxlength="100" style="flex:1;min-width:200px">
+        <button class="btn btn-primary" id="pr-activate">Активировать</button>
+      </div>
+      <p class="small mt-8" id="pr-msg" style="color:var(--muted)">Промокод проверяется на сервере. Без подключённого backend активация недоступна.</p>
+    </div>
+    <div class="card mb-20">
+      <h3 class="mb-14">Сравнение тарифов</h3>
+      <div class="tbl-wrap"><table class="cmp-table">
+        <thead><tr><th>Возможность</th><th>Free</th><th>Premium</th></tr></thead>
+        <tbody>
+          <tr><td>Сообщения AI Assistant</td><td>10 / день</td><td><b>100 / день</b></td></tr>
+          <tr><td>Генерации тестов</td><td>5 / день</td><td><b>50 / день</b></td></tr>
+          <tr><td>Эксперт-режим ИИ</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>ИИ-планы обучения</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>ИИ-генерация карточек</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>Свои Flashcards</td><td>до 30</td><td><b>без ограничений</b></td></tr>
+          <tr><td>Озвучка слов (TTS)</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>Premium-наборы английского</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>Сравнение недель и календарь</td><td class="no-c">—</td><td class="yes">✓</td></tr>
+          <tr><td>Новые функции</td><td>с задержкой</td><td><b>приоритетный доступ</b></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h3 class="mb-14">Архитектура платежей</h3>
+      <p class="small muted">Оплата пока не подключена и банковские данные не запрашиваются. Сервер уже принимает <code class="ic-c">POST /api/premium/activate</code> с промокодом: чтобы подключить реальную оплату, достаточно добавить вебхук платёжной системы (ЮKassa, Stripe, Telegram Stars), который выдаёт premium-сессии на сервере — фронтенд менять не нужно.</p>
+    </div>
+  </section>
+
+  <!-- ===== НАСТРОЙКИ ===== -->
+  <section class="view" id="view-settings">
+    <div class="view-head">
+      <h1 class="row" style="gap:12px"><svg class="ic ic-lg muted"><use href="#i-gear"/></svg>Настройки</h1>
+      <p>Профиль, подключение ИИ и управление данными.</p>
+    </div>
+    <div class="card mb-20">
+      <h3 class="mb-14">Профиль</h3>
+      <div class="quiz-form-grid">
+        <div class="field"><label class="lbl" for="set-name">Как к тебе обращаться</label><input class="inp" id="set-name" maxlength="30" placeholder="Ученик"></div>
+        <div class="field"><label class="lbl" for="set-goal">Дневная цель (очки)</label><input class="inp" id="set-goal" type="number" min="5" max="300" value="30"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" id="set-save">Сохранить</button>
+    </div>
+    <div class="card mb-20 grad-brd">
+      <h3 class="mb-14 row" style="gap:10px"><svg class="ic" style="color:var(--gold)"><use href="#i-zap"/></svg>Подключение AI-модели</h3>
+      <div id="set-api-status" class="mb-14"></div>
+      <div class="field"><label class="lbl" for="set-api-base">Адрес backend-API (если сервер на другом хосте)</label>
+        <input class="inp" id="set-api-base" placeholder="Например: http://localhost:3000 (пусто = тот же домен)"></div>
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" id="set-api-save">Сохранить и проверить</button>
+        <button class="btn btn-ghost btn-sm" id="set-api-recheck"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Проверить снова</button>
+      </div>
+      <details class="mt-14">
+        <summary class="small" style="cursor:pointer;color:var(--vio-2)">Как подключить настоящий ИИ — инструкция</summary>
+        <div class="small muted mt-8" style="line-height:1.7">
+          1. Установите Node.js 18+.<br>
+          2. В папке <code class="ic-c">backend/</code> выполните <code class="ic-c">npm install</code>.<br>
+          3. Задайте ключ модели в переменных окружения (<code class="ic-c">.env</code> или экспортом): провайдер <code class="ic-c">zai</code> (встроенный) или любой OpenAI-совместимый (<code class="ic-c">OPENAI_API_KEY</code>).<br>
+          4. Запустите <code class="ic-c">npm start</code> — сервер отдаёт фронтенд и API на одном порту.<br>
+          5. Ключ живёт только на сервере: браузер общается с <code class="ic-c">/api/*</code> и ключа не видит. Подробности — в README.md.
+        </div>
+      </details>
+    </div>
+    <div class="card mb-20" id="set-demo-row" hidden>
+      <h3 class="mb-14">Демо-режим Premium <span class="pill">только локально</span></h3>
+      <div class="row-between">
+        <p class="small muted" style="max-width:520px">Включает Premium-интерфейс локально, чтобы посмотреть все функции без сервера. Настоящая проверка тарифа и лимитов выполняется только на сервере — этот переключатель не влияет на сервер.</p>
+        <label class="switch"><input type="checkbox" id="set-demo-premium"><span class="tr"></span></label>
+      </div>
+    </div>
+    <div class="card mb-20">
+      <h3 class="mb-14">Мои данные</h3>
+      <p class="small muted mb-14">Прогресс хранится только в вашем браузере (localStorage). Можно сохранить резервную копию или перенести её на другое устройство.</p>
+      <div class="row" style="gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" id="set-export"><svg class="ic ic-sm"><use href="#i-down"/></svg>Экспорт (JSON)</button>
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer"><svg class="ic ic-sm"><use href="#i-up"/></svg>Импорт<input type="file" id="set-import" accept=".json,application/json" hidden></label>
+        <button class="btn btn-danger btn-sm" id="set-reset"><svg class="ic ic-sm"><use href="#i-trash"/></svg>Сбросить всё</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="mb-14">О платформе</h3>
+      <p class="small muted">StudyFlow AI v1.0 — образовательная платформа с ИИ-репетитором, генератором тестов, карточками, тренажёром английского, планировщиком и статистикой. Прогресс локальный, ИИ и лимиты — через ваш backend. По вопросам Premium: <a href="https://t.me/vnepl" target="_blank" rel="noopener noreferrer">@vnepl</a>.</p>
+    </div>
+  </section>
+
+  </main>
+</div>
+</div>
+
+<div class="toast-root" id="toast-root"></div>
+<div id="modal-root"></div>
+<script>
+'use strict';
+/* ================= StudyFlow AI — ядро ================= */
+
+/* ---------- утилиты ---------- */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const dkey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const todayKey = () => dkey(new Date());
+function plural(n, f) { n = Math.abs(n) % 100; const n1 = n % 10; if (n > 10 && n < 20) return f[2]; if (n1 > 1 && n1 < 5) return f[1]; if (n1 === 1) return f[0]; return f[2]; }
+const pluralN = (n, f) => n + ' ' + plural(n, f);
+function fmtAgo(ts) {
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 50) return 'только что';
+  if (s < 3600) return pluralN(Math.round(s / 60), ['минуту', 'минуты', 'минут']) + ' назад';
+  if (s < 86400) return pluralN(Math.round(s / 3600), ['час', 'часа', 'часов']) + ' назад';
+  return new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+}
+function daysLeft(dl) { if (!dl) return null; const d = new Date(dl + 'T23:59:59'); return Math.ceil((d - Date.now()) / 86400000); }
+
+/* ---------- состояние (localStorage) ---------- */
+const LS_KEY = 'sf_state_v1';
+const DEFAULTS = {
+  v: 1,
+  profile: { name: 'Ученик', goal: 30 },
+  premium: { active: false, since: null, demo: false },
+  token: null,
+  daily: {},
+  activity: [],
+  tests: [],
+  topics: {},
+  chats: [], chatActive: null,
+  decks: [],
+  learned: {}, wordStats: {}, customWords: [],
+  plans: [],
+  settings: { apiBase: '' }
+};
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return structuredClone(DEFAULTS);
+    const d = JSON.parse(raw);
+    const s = structuredClone(DEFAULTS);
+    for (const k of Object.keys(s)) if (d[k] !== undefined) s[k] = d[k];
+    return s;
+  } catch (e) { console.warn('state load failed', e); return structuredClone(DEFAULTS); }
+}
+let S = loadState();
+let saveT = null;
+function save() {
+  clearTimeout(saveT);
+  saveT = setTimeout(() => { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch (e) { console.warn('save failed', e); } }, 250);
+}
+
+/* ---------- дневная активность ---------- */
+function dayObj(k) { const key = k || todayKey(); if (!S.daily[key]) S.daily[key] = { pts: 0, ai: 0, words: 0, tests: 0, cards: 0, tasks: 0 }; return S.daily[key]; }
+function logActivity(type, title, pts) {
+  S.activity.unshift({ t: Date.now(), type, title });
+  if (S.activity.length > 250) S.activity.length = 250;
+  const d = dayObj();
+  d.pts += pts || 0;
+  const map = { ai: 'ai', word: 'words', test: 'tests', card: 'cards', task: 'tasks' };
+  if (map[type]) d[map[type]]++;
+  save();
+}
+function calcStreak() {
+  let n = 0; const d = new Date();
+  if ((S.daily[todayKey()]?.pts || 0) === 0) d.setDate(d.getDate() - 1);
+  for (let i = 0; i < 400; i++) {
+    if ((S.daily[dkey(d)]?.pts || 0) > 0) { n++; d.setDate(d.getDate() - 1); } else break;
+  }
+  return n;
+}
+function totals() {
+  const topics = Object.values(S.topics).filter(t => t.pct >= 60).length;
+  const tests = S.tests.length;
+  const words = Object.keys(S.learned).length;
+  const cards = S.decks.reduce((a, d) => a + d.cards.filter(c => c.known).length, 0);
+  const pct = clamp(Math.round(
+    Math.min(topics / 10, 1) * 25 + Math.min(tests / 20, 1) * 25 +
+    Math.min(words / 100, 1) * 30 + Math.min(cards / 50, 1) * 20), 0, 100);
+  return { topics, tests, words, cards, pct };
+}
+
+/* ---------- тарифы и лимиты ---------- */
+const CLIENT_LIMITS = { free: { chat: 10, quiz: 5 }, premium: { chat: 100, quiz: 50, plan: 20, cards: 30 } };
+const SF = { mode: 'local', ai: false, base: '', limits: CLIENT_LIMITS, premiumCodeEnabled: false, plan: 'free', quota: null };
+function isPremium() { return SF.mode === 'server' ? SF.plan === 'premium' : (S.premium.active || S.premium.demo); }
+function limOf(kind) {
+  const p = isPremium() ? 'premium' : 'free';
+  const l = SF.limits?.[p]?.[kind];
+  return (l === undefined || l === null) ? (CLIENT_LIMITS[p][kind] ?? 0) : l;
+}
+function quotaLeft(kind) {
+  if (SF.mode === 'server' && SF.quota) {
+    const q = SF.quota[kind === 'plan' ? 'planq' : kind];
+    if (q) return Math.max(0, q.limit - q.used);
+  }
+  return null;
+}
+function quotaText(kind) {
+  const left = quotaLeft(kind);
+  const limit = limOf(kind);
+  const label = kind === 'chat' ? 'сообщений' : 'генераций';
+  if (left === null) return limit + ' ' + label + ' в день (' + (isPremium() ? 'Premium' : 'Free') + ')';
+  return { chat: 'Сообщений осталось', quiz: 'Генераций осталось' }[kind] + ': ' + left + ' из ' + limit;
+}
+function updateQuotaUI() {
+  const cq = $('#chat-quota'), qz = $('#quiz-quota');
+  const chatTxt = quotaText('chat');
+  if (cq) { cq.textContent = chatTxt; cq.classList.toggle('low', (quotaLeft('chat') ?? 1) <= 2); }
+  if (qz) { qz.textContent = quotaText('quiz'); qz.classList.toggle('low', (quotaLeft('quiz') ?? 1) <= 1); }
+}
+function refreshPlanUI() {
+  const pr = isPremium();
+  $$('.js-plan-badge').forEach(b => { b.textContent = pr ? 'Premium' : 'Free'; b.classList.toggle('badge-premium', pr); });
+  $$('.js-plan-name').forEach(b => b.textContent = pr ? 'Premium' : 'Free');
+  $$('.js-plan-hint').forEach(b => b.textContent = pr ? '100 сообщений ИИ в день' : '10 сообщений ИИ в день');
+  const dot = $('#mode-dot'), mt = $('#mode-text');
+  if (dot) { dot.classList.toggle('ok', SF.mode === 'server' && SF.ai); }
+  if (mt) mt.textContent = SF.mode === 'server' ? (SF.ai ? 'Сервер подключён · ИИ активен' : 'Сервер подключён · ИИ не настроен') : 'Локальный демо-режим';
+  updateQuotaUI();
+}
+
+/* ---------- серверный клиент ---------- */
+async function sfFetch(path, body, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (S.token) headers['X-Session-Token'] = S.token;
+  let res;
+  try {
+    res = await fetch(SF.base + path, {
+      method: opts.method || (body === undefined ? 'GET' : 'POST'),
+      headers, body: body === undefined ? undefined : JSON.stringify(body),
+      signal: opts.signal,
+    });
+  } catch (e) { throw { status: 0, data: { error: 'network' } }; }
+  let data = {};
+  try { data = await res.json(); } catch (e) {}
+  if (!res.ok) throw { status: res.status, data };
+  return data;
+}
+async function ensureSession() {
+  if (!S.token) { const r = await sfFetch('/api/session', {}, { timeoutAll: 0 }); S.token = r.token; save(); }
+}
+async function aiPost(path, body, signal) {
+  const attempt = () => sfFetch(path, body, { signal });  try {
+    return await attempt();
+  } catch (e) {
+    if (e.status === 401) { S.token = null; save(); await ensureSession(); return attempt(); }
+    throw e;
+  }
+}
+async function sfInit() {
+  const base = (S.settings.apiBase || '').trim().replace(/\/+$/, '');
+  SF.base = base;
+  try {
+    const ctrl = new AbortController();
+    const to = setTimeout(() => ctrl.abort(), 3000);
+    const res = await fetch(base + '/api/config', { signal: ctrl.signal });
+    clearTimeout(to);
+    if (!res.ok) throw 0;
+    const cfg = await res.json();
+    SF.mode = 'server';
+    SF.ai = !!(cfg.ai && cfg.ai.available);
+    SF.provider = cfg.ai?.provider || '—';
+    SF.premiumCodeEnabled = !!cfg.premiumCodeEnabled;
+    SF.limits = { free: { ...CLIENT_LIMITS.free, ...(cfg.limits?.free || {}) }, premium: { ...CLIENT_LIMITS.premium, ...(cfg.limits?.premium || {}) } };
+    await ensureSession();
+    const q = await sfFetch('/api/quota', undefined).catch(() => null);
+    if (q && q.quota) { SF.quota = q.quota; SF.plan = q.quota.plan || 'free'; }
+  } catch (e) {
+    SF.mode = 'local'; SF.ai = false; SF.quota = null;
+    SF.plan = (S.premium.active || S.premium.demo) ? 'premium' : 'free';
+  }
+}
+function aiSetupHTML() {
+  return `
+  <p>Сейчас платформа работает <b>в локальном демо-режиме</b>: прогресс сохраняется в браузере, но настоящая AI-модель не подключена. Чтобы включить ИИ:</p>
+  <ol style="margin:10px 0 10px 18px;display:flex;flex-direction:column;gap:5px">
+    <li>Установите Node.js 18+ (nodejs.org).</li>
+    <li>В папке <code class="ic-c">backend/</code> рядом с этой страницей выполните <code class="ic-c">npm install</code>, затем <code class="ic-c">npm start</code>.</li>
+    <li>Ключ AI-модели укажите в переменных окружения — он хранится <b>только на сервере</b> и никогда не попадает в браузер.</li>
+    <li>Откройте приложение через сервер (обычно <code class="ic-c">http://localhost:3000</code>) — или впишите адрес сервера в разделе «Настройки».</li>
+  </ol>
+  <p class="small muted">Пошаговая инструкция — в файле <b>README.md</b> рядом с этим файлом.</p>`;
+}
+
+/* ---------- тосты ---------- */
+function toast(msg, type = 'info', ms = 3800) {
+  const icons = { success: 'i-checkc', error: 'i-xc', info: 'i-info', gold: 'i-crown' };
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<svg class="ic ic-sm"><use href="#${icons[type] || 'i-info'}"/></svg><div>${esc(msg)}</div>`;
+  $('#toast-root').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
+}
+
+/* ---------- модалки ---------- */
+function modal(html) {
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML = `<div class="modal">${html}</div>`;
+  const close = () => ov.remove();
+  ov.addEventListener('click', e => { if (e.target === ov) close(); });
+  $('#modal-root').appendChild(ov);
+  return { el: ov, close };
+}
+function confirmModal(title, text, okLabel, onOk) {
+  const m = modal(`
+    <h3><svg class="ic" style="color:var(--err)"><use href="#i-warn"/></svg>${esc(title)}</h3>
+    <p>${esc(text)}</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-act="no">Отмена</button>
+      <button class="btn btn-danger" data-act="ok">${esc(okLabel)}</button>
+    </div>`);
+  m.el.querySelector('[data-act="no"]').onclick = m.close;
+  m.el.querySelector('[data-act="ok"]').onclick = () => { m.close(); onOk(); };
+}
+const UPSell = {
+  expert: ['Эксперт-режим AI Assistant', 'Максимально подробные разборы, несколько способов решения, разбор типичных ошибок и вопросы для самопроверки.'],
+  plan: ['ИИ-планы обучения', 'AI разберёт большую цель на небольшие задачи по дням и срокам — персонально под ваш запрос.'],
+  cards: ['ИИ-генерация карточек', 'Введите тему — ИИ создаст готовую колоду карточек с определениями, формулами и примерами.'],
+  cardsLimit: ['Неограниченные Flashcards', 'На Free — до 30 карточек. Premium снимает ограничение полностью.'],
+  packs: ['Premium-наборы английского', 'Неправильные глаголы, фразовые глаголы, деловая лексика — с переводом и примерами.'],
+  tts: ['Озвучка слов', 'Слушайте произношение любого английского слова — встроенный синтез речи браузера.'],
+  stats: ['Расширенная статистика', 'Сравнение недель, календарь активности за 30 дней и детальная аналитика обучения.'],
+  export: ['Экспорт диалогов', 'Сохраняйте разговоры с ИИ в файл и делитесь конспектами.'],
+};
+function upsell(feature) {
+  const [title, desc] = UPSell[feature] || ['Функция Premium', 'Доступна на тарифе Premium.'];
+  const m = modal(`
+    <h3><svg class="ic" style="color:var(--gold)"><use href="#i-crown"/></svg>${esc(title)}</h3>
+    <p>${esc(desc)}</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-act="no">Позже</button>
+      <button class="btn btn-gold" data-act="go"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Смотреть Premium</button>
+    </div>`);
+  m.el.querySelector('[data-act="no"]').onclick = m.close;
+  m.el.querySelector('[data-act="go"]').onclick = () => { m.close(); go('premium'); };
+}
+function showLimitModal(kind, data) {
+  const label = kind === 'chat' ? 'сообщений для ИИ' : 'генераций тестов';
+  const now = new Date(); const mid = new Date(now); mid.setHours(24, 0, 0, 0);
+  const hrs = Math.max(1, Math.ceil((mid - now) / 3600000));
+  const used = data?.used ?? limOf(kind), limit = data?.limit ?? limOf(kind);
+  modal(`
+    <h3><svg class="ic" style="color:var(--gold)"><use href="#i-zap"/></svg>Дневной лимит исчерпан</h3>
+    <p>Использовано <b>${used} из ${limit}</b> ${label} на тарифе <b>${isPremium() ? 'Premium' : 'Free'}</b>.
+    Лимиты обновляются каждый день в 00:00 — до обновления примерно ${pluralN(hrs, ['час', 'часа', 'часов'])}.</p>
+    <p class="small muted mt-8">Проверка лимитов выполняется на сервере — она не зависит от браузера.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" data-act="no">Понятно</button>
+      <button class="btn btn-gold" data-act="go"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Перейти на Premium</button>
+    </div>`)
+    .el.querySelectorAll('[data-act]').forEach(b => b.onclick = () => { b.closest('.overlay').remove(); if (b.dataset.act === 'go') go('premium'); });
+}
+
+/* ---------- эффекты ---------- */
+function animNum(el, to, suffix = '') {
+  if (!el) return;
+  const from = Number(el.dataset.v || 0);
+  el.dataset.v = to;
+  if (REDUCED || from === to) { el.textContent = to + suffix; return; }
+  const t0 = performance.now(), dur = 750;
+  const step = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = Math.round(from + (to - from) * e) + suffix;
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function setRing(circleEl, pctEl, pct) {
+  const C = 2 * Math.PI * 52;
+  if (circleEl) circleEl.style.strokeDashoffset = C * (1 - clamp(pct, 0, 100) / 100);
+  if (pctEl) pctEl.textContent = clamp(pct, 0, 100) + '%';
+}
+function bindTilt() {
+  if (matchMedia('(hover: none)').matches) return;
+  $$('.tilt').forEach(el => {
+    if (el._tiltBound) return;
+    el._tiltBound = 1;
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+      el.style.transform = `perspective(900px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 8).toFixed(2)}deg)`;
+      el.style.setProperty('--mx', ((px + .5) * 100).toFixed(1) + '%');
+      el.style.setProperty('--my', ((py + .5) * 100).toFixed(1) + '%');
+    });
+    el.addEventListener('pointerleave', () => { el.style.transform = ''; });
+  });
+}
+function confetti(n = 40) {
+  if (REDUCED) return;
+  const colors = ['#8b5cf6', '#4f7dff', '#fbbf24', '#34d399', '#f472b6'];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.background = colors[i % colors.length];
+    el.style.animationDuration = (1.6 + Math.random() * 1.5) + 's';
+    el.style.animationDelay = (Math.random() * .35) + 's';
+    el.style.transform = `rotate(${Math.random() * 360}deg)`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3800);
+  }
+}
+function initParticles() {
+  const c = $('#bg-canvas');
+  if (!c || REDUCED) return;
+  const ctx = c.getContext('2d');
+  const DPR = Math.min(2, devicePixelRatio || 1);
+  let W, H, parts = [];
+  function resize() {
+    W = innerWidth; H = innerHeight;
+    c.width = W * DPR; c.height = H * DPR;
+    c.style.width = W + 'px'; c.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = clamp(Math.round(W * H / 40000), 18, 46);
+    parts = Array.from({ length: n }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.7 + .6,
+      vx: (Math.random() - .5) * .2, vy: (Math.random() - .5) * .2,
+      h: Math.random() < .55 ? 258 : 222,
+      tw: Math.random() * Math.PI * 2
+    }));
+  }
+  resize();
+  addEventListener('resize', resize);
+  (function frame() {
+    ctx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.tw += .02;
+      if (p.x < -12) p.x = W + 12; if (p.x > W + 12) p.x = -12;
+      if (p.y < -12) p.y = H + 12; if (p.y > H + 12) p.y = -12;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, 7);
+      ctx.fillStyle = `hsla(${p.h},90%,74%,${.22 + Math.sin(p.tw) * .13})`;
+      ctx.fill();
+    }
+    for (let i = 0; i < parts.length; i++) for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i], b = parts[j];
+      const dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+      if (d2 < 110 * 110) {
+        ctx.strokeStyle = `rgba(139,92,246,${(1 - Math.sqrt(d2) / 110) * .09})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    if (document.hidden) setTimeout(frame, 400); else requestAnimationFrame(frame);
+  })();
+}
+
+/* ---------- роутер ---------- */
+const VIEWS = ['dashboard', 'ai', 'quiz', 'cards', 'english', 'planner', 'stats', 'premium', 'settings'];
+const RENDER = {};
+function go(view) {
+  if (!VIEWS.includes(view)) view = 'dashboard';
+  if (location.hash === '#/' + view) onRoute(); else location.hash = '#/' + view;
+}
+function onRoute() {
+  const v = (location.hash.replace('#/', '') || 'dashboard');
+  const view = VIEWS.includes(v) ? v : 'dashboard';
+  VIEWS.forEach(x => $('#view-' + x).classList.toggle('active', x === view));
+  $$('#sb-nav .nav-item').forEach(b => b.classList.toggle('on', b.dataset.nav === view));
+  $('#sidebar').classList.remove('open');
+  $('#sb-overlay').classList.remove('show');
+  if (RENDER[view]) { try { RENDER[view](); } catch (e) { console.error('render ' + view, e); } }
+  bindTilt();
+  window.scrollTo({ top: 0 });
+}
+function toggleSidebar(open) {
+  $('#sidebar').classList.toggle('open', open);
+  $('#sb-overlay').classList.toggle('show', open);
+}
+
+/* ---------- markdown (безопасный рендер ответов ИИ) ---------- */
+function mdInline(s) {
+  s = esc(s);
+  s = s.replace(/`([^`\n]+)`/g, '<code class="ic-c">$1</code>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<i>$2</i>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (m, t, u) => `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>`);
+  return s;
+}
+function mdBlock(code) {
+  return `<div class="codeblock"><button class="cb-copy" type="button">Копировать</button><pre><code>${esc(code.replace(/^\n|\n$/g, ''))}</code></pre></div>`;
+}
+function md(src) {
+  const lines = String(src).replace(/\r/g, '').split('\n');
+  let out = '', i = 0;
+  while (i < lines.length) {
+    const L = lines[i];
+    if (/^```/.test(L)) {
+      const buf = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+      i++;
+      out += mdBlock(buf.join('\n'));
+      continue;
+    }
+    let m;
+    if ((m = L.match(/^#{1,4}\s+(.*)/))) { out += `<div class="md-h">${mdInline(m[1])}</div>`; i++; continue; }
+    if ((m = L.match(/^>\s?(.*)/))) { out += `<div class="md-q">${mdInline(m[1])}</div>`; i++; continue; }
+    if (/^\s*[-*•]\s+/.test(L)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-*•]\s+/.test(lines[i])) { items.push(lines[i].replace(/^\s*[-*•]\s+/, '')); i++; }
+      out += '<ul>' + items.map(x => `<li>${mdInline(x)}</li>`).join('') + '</ul>';
+      continue;
+    }
+    if (/^\s*\d+[.)]\s+/.test(L)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) { items.push(lines[i].replace(/^\s*\d+[.)]\s+/, '')); i++; }
+      out += '<ol>' + items.map(x => `<li>${mdInline(x)}</li>`).join('') + '</ol>';
+      continue;
+    }
+    if (!L.trim()) { i++; continue; }
+    out += `<div class="md-p">${mdInline(L)}</div>`;
+    i++;
+  }
+  return out;
+}
+/* копирование кода и делегированные переходы */
+document.addEventListener('click', e => {
+  const cb = e.target.closest('.cb-copy');
+  if (cb) {
+    const code = cb.parentElement.querySelector('code').textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject()).then(() => {
+      cb.textContent = 'Скопировано'; setTimeout(() => cb.textContent = 'Копировать', 1500);
+    }).catch(() => toast('Браузер не разрешил копирование', 'error'));
+    return;
+  }
+  const g = e.target.closest('[data-go],[data-nav]');
+  if (g && !g.closest('.sb-nav')) { go(g.dataset.go || g.dataset.nav); return; }
+});
+$$('#sb-nav .nav-item').forEach(b => b.addEventListener('click', () => go(b.dataset.nav)));
+$('#burger').addEventListener('click', () => toggleSidebar(!$('#sidebar').classList.contains('open')));
+$('#sb-overlay').addEventListener('click', () => toggleSidebar(false));
+$('#sb-plan-btn').addEventListener('click', () => go('premium'));
+</script>
+<script>
+'use strict';
+/* ================= Дашборд ================= */
+const TYPE_IC = { ai: 'i-bot', test: 'i-quiz', card: 'i-cards', word: 'i-book', task: 'i-check', deck: 'i-cards', plan: 'i-plan', premium: 'i-crown', quiz: 'i-quiz', english: 'i-book' };
+function histItem(a) {
+  return `<div class="hist-item"><div class="hist-ic"><svg class="ic ic-sm"><use href="#${TYPE_IC[a.type] || 'i-info'}"/></svg></div>
+  <div style="flex:1;min-width:0"><b>${esc(a.title)}</b><time style="display:block" class="muted small">${fmtAgo(a.t)}</time></div></div>`;
+}
+function renderTeaser() {
+  const pr = isPremium();
+  $('#teaser-title').textContent = pr ? 'Premium активен' : 'StudyFlow Premium';
+  $('#teaser-body').innerHTML = pr ? `
+    <p class="small muted mb-14">Все лимиты расширены, Эксперт-режим ИИ, ИИ-планы и карточки, озвучка слов и расширенная статистика доступны.</p>
+    <ul class="price-feats">
+      <li><svg class="ic"><use href="#i-check"/></svg>100 сообщений ИИ и 50 тестов в день</li>
+      <li><svg class="ic"><use href="#i-check"/></svg>ИИ-планы и ИИ-колоды карточек</li>
+      <li><svg class="ic"><use href="#i-check"/></svg>Расширенная статистика</li>
+    </ul>` : `
+    <p class="small muted mb-14">100 сообщений ИИ в день, эксперт-режим, персональные ИИ-планы, ИИ-карточки, озвучка слов и расширенная статистика.</p>
+    <button class="btn btn-gold" data-go="premium" style="width:100%"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Открыть Premium</button>`;
+}
+function renderDashboard() {
+  const t = totals();
+  const hour = new Date().getHours();
+  const greet = hour < 5 ? 'Доброй ночи' : hour < 12 ? 'Доброе утро' : hour < 18 ? 'Добрый день' : 'Добрый вечер';
+  $('#greet-title').textContent = `${greet}, ${S.profile.name || 'Ученик'}!`;
+  $('#greet-emoji').textContent = hour < 12 ? '🌅' : hour < 18 ? '☀️' : '🌙';
+  $('#greet-date').textContent = new Date().toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' });
+  $('#streak-val').textContent = calcStreak();
+  setRing($('#dash-ring'), $('#dash-ring-pct'), t.pct);
+  const bars = [['topics', t.topics, 10], ['tests', t.tests, 20], ['words', t.words, 100], ['cards', t.cards, 50]];
+  for (const [id, v, max] of bars) {
+    const bar = $('#pb-' + id); if (bar) bar.style.width = clamp(v / max * 100, 0, 100) + '%';
+    const tx = $('#pb-' + id + '-txt'); if (tx) tx.textContent = v + '/' + max;
+  }
+  const d = dayObj(), goal = S.profile.goal || 30;
+  $('#goal-num').innerHTML = `${d.pts} <span class="muted" style="font-size:16px;font-weight:600">/ ${goal} ${plural(goal, ['очко', 'очка', 'очков'])}</span>`;
+  $('#dash-goal-bar').style.width = clamp(d.pts / goal * 100, 0, 100) + '%';
+  $('#dash-goal-text').textContent = d.pts >= goal
+    ? 'Цель на сегодня выполнена — отличная работа! Так держать.'
+    : `Ещё ${goal - d.pts} до цели: тест +15, слово +3, карточка +2, задача +10.`;
+  animNum($('#stat-topics'), t.topics);
+  animNum($('#stat-tests'), t.tests);
+  animNum($('#stat-words'), t.words);
+  animNum($('#stat-cards'), t.cards);
+  const lbl = (id, n, forms) => { const el = $(id); if (el) el.textContent = n === 1 ? forms[0] : forms[2]; };
+  lbl('#stat-topics-lbl', t.topics, ['изученная тема', '', 'изученных тем']);
+  lbl('#stat-tests-lbl', t.tests, ['тест пройден', '', 'тестов пройдено']);
+  lbl('#stat-words-lbl', t.words, ['английское слово', '', 'английских слов']);
+  lbl('#stat-cards-lbl', t.cards, ['карточка выучена', '', 'карточек выучено']);
+  $('#goal-ai').textContent = d.ai + ' ' + plural(d.ai, ['вопрос', 'вопроса', 'вопросов']);
+  $('#goal-words').textContent = d.words + ' ' + plural(d.words, ['слово', 'слова', 'слов']);
+  $('#goal-cards').textContent = d.cards + ' карт.';
+  $('#dash-history').innerHTML = S.activity.slice(0, 8).map(histItem).join('')
+    || '<p class="muted small">Пока пусто. Начните с генератора тестов или нескольких английских слов — прогресс появится здесь.</p>';
+  renderTeaser();
+  refreshPlanUI();
+}
+RENDER.dashboard = renderDashboard;
+
+/* ================= AI Assistant ================= */
+let chatBusy = false, chatAbort = null, lastChatSend = 0, chatDepthVal = 'standard';
+function activeConv() { return S.chats.find(c => c.id === S.chatActive) || null; }
+function newChat() {
+  const c = { id: uid(), title: 'Новый диалог', t: Date.now(), msgs: [] };
+  S.chats.unshift(c);
+  if (S.chats.length > 40) S.chats.length = 40;
+  S.chatActive = c.id;
+  save();
+  return c;
+}
+function renderConvList() {
+  const el = $('#chat-convs');
+  el.innerHTML = S.chats.map(c => `
+    <button class="conv-item ${c.id === S.chatActive ? 'on' : ''}" data-conv="${c.id}">
+      <svg class="ic ic-sm muted"><use href="#i-bot"/></svg>
+      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.title)}</span>
+      <span class="conv-del" data-del="${c.id}" title="Удалить"><svg class="ic ic-sm"><use href="#i-trash"/></svg></span>
+    </button>`).join('') || '<p class="small muted" style="padding:6px 2px">Диалогов нет. Начните новый!</p>';
+}
+$('#chat-convs').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    const id = del.dataset.del;
+    const conv = S.chats.find(c => c.id === id);
+    confirmModal('Удалить диалог?', '«' + (conv ? conv.title : '') + '» будет удалён безвозвратно.', 'Удалить', () => {
+      S.chats = S.chats.filter(c => c.id !== id);
+      if (S.chatActive === id) S.chatActive = S.chats[0]?.id || null;
+      save(); renderConvList(); renderMsgs();
+    });
+    return;
+  }
+  const it = e.target.closest('[data-conv]');
+  if (it) { S.chatActive = it.dataset.conv; save(); renderConvList(); renderMsgs(); }
+});
+function chatEmptyHTML() {
+  return `<div class="chat-empty">
+    <div class="chat-orb"><svg class="ic ic-lg" style="color:#fff"><use href="#i-bot"/></svg></div>
+    <div><b style="font-size:17px">Привет! Я — StudyFlow AI</b><p class="small muted" style="max-width:400px;margin-top:6px">Объясню сложную тему простыми словами, решу задачу пошагово и помогу подготовиться к контрольной.</p></div>
+    <div class="chat-sugg">
+      <button data-sugg="Объясни теорему Пифагора простыми словами с примером">Объясни теорему Пифагора</button>
+      <button data-sugg="Реши пошагово: 3(x − 2) = 27">Реши пошагово: 3(x−2)=27</button>
+      <button data-sugg="Помоги подготовиться к контрольной по дробям — составь план">Подготовка к контрольной</button>
+      <button data-sugg="Объясни разницу между Present Perfect и Past Simple с примерами">Present Perfect vs Past Simple</button>
+    </div>
+  </div>`;
+}
+function msgHTML(m) {
+  const who = m.role === 'user' ? 'me' : 'ai';
+  const body = m.error ? `<div class="md-p" style="color:var(--err)">${esc(m.content)}</div>` : md(m.content);
+  return `<div class="msg ${m.role === 'user' ? 'msg-user' : 'msg-ai'}">
+    <div class="msg-ava ${who}">${m.role === 'user' ? 'Я' : '<svg class="ic ic-sm"><use href="#i-spark"/></svg>'}</div>
+    <div class="msg-body">${body}</div></div>`;
+}
+function renderMsgs() {
+  const el = $('#chat-msgs');
+  const conv = activeConv();
+  if (!conv || !conv.msgs.length) { el.innerHTML = chatEmptyHTML(); return; }
+  el.innerHTML = conv.msgs.map(msgHTML).join('');
+  el.scrollTop = el.scrollHeight;
+}
+$('#chat-msgs').addEventListener('click', e => {
+  const s = e.target.closest('[data-sugg]');
+  if (s) { $('#chat-input').value = s.dataset.sugg; sendChat(); }
+});
+function addTyping() {
+  const el = document.createElement('div');
+  el.className = 'msg msg-ai';
+  el.innerHTML = `<div class="msg-ava ai"><svg class="ic ic-sm"><use href="#i-spark"/></svg></div>
+    <div class="msg-body"><span class="typing dots"><span></span><span></span><span></span></span></div>`;
+  $('#chat-msgs').appendChild(el);
+  $('#chat-msgs').scrollTop = $('#chat-msgs').scrollHeight;
+  return el;
+}
+function aiNotConnectedBubble() {
+  const el = document.createElement('div');
+  el.className = 'msg msg-ai';
+  el.innerHTML = `<div class="msg-ava ai"><svg class="ic ic-sm"><use href="#i-spark"/></svg></div>
+    <div class="msg-body ai-notice" style="padding:0;overflow:hidden">
+      <div style="padding:12px 15px 0" class="row"><svg class="ic" style="color:var(--gold)"><use href="#i-info"/></svg><b>ИИ не подключён</b></div>
+      <div style="padding:8px 15px 14px">${aiSetupHTML()}</div>
+      <div style="padding:0 15px 14px"><button class="btn btn-primary btn-sm" data-go="settings">Открыть настройки</button></div>
+    </div>`;
+  $('#chat-msgs').appendChild(el);
+  $('#chat-msgs').scrollTop = $('#chat-msgs').scrollHeight;
+}
+function aiErrText(e) {
+  const d = e?.data || {};
+  if (e?.status === 429 && d.error === 'limit') { showLimitModal(d.kind || 'chat', d); return null; }
+  if (e?.status === 403 && d.error === 'premium') { upsell(d.feature || 'expert'); return null; }
+  if (e?.status === 0 || d.error === 'network') return 'Нет связи с сервером. Проверьте, что backend запущен, и адрес API в Настройках.';
+  if (d.error === 'noai') return 'На сервере не настроена AI-модель — инструкция в Настройках.';
+  if (d.error === 'ai_timeout' || d.error === 'ai_bad_response' || String(d.error || '').startsWith('ai_')) return 'AI-модель не ответила или вернула некорректный формат. Попробуйте ещё раз.';
+  if (e?.status === 429 && d.error === 'rate') return 'Слишком много запросов — подождите минуту.';
+  return 'Ошибка сервера' + (e?.status ? ' (' + e.status + ')' : '') + '. Попробуйте ещё раз.';
+}
+function lastUserText(conv) { for (let i = conv.msgs.length - 1; i >= 0; i--) if (conv.msgs[i].role === 'user') return conv.msgs[i].content; return ''; }
+async function sendChat(retryText) {
+  const inp = $('#chat-input');
+  const text = retryText || (inp.value || '').trim();
+  if (!text || chatBusy) return;
+  if (Date.now() - lastChatSend < 1200) { toast('Слишком часто — подождите секунду', 'info'); return; }
+  lastChatSend = Date.now();
+  if (!activeConv()) newChat();
+  const conv = activeConv();
+  if (!retryText) {
+    conv.msgs.push({ role: 'user', content: text, t: Date.now() });
+    if (conv.title === 'Новый диалог') conv.title = text.slice(0, 42);
+    save();
+  }
+  inp.value = ''; autoGrow(inp);
+  renderConvList(); renderMsgs();
+  chatBusy = true;
+  $('#chat-send').style.display = 'none'; $('#chat-stop').style.display = '';
+  const typing = addTyping();
+  chatAbort = new AbortController();
+  try {
+    if (SF.mode !== 'server' || !SF.ai) {
+      await new Promise(r => setTimeout(r, REDUCED ? 50 : 550));
+      typing.remove();
+      aiNotConnectedBubble();
+    } else {
+      const r = await aiPost('/api/chat', {
+        messages: conv.msgs.slice(-14).map(m => ({ role: m.role, content: m.content })),
+        depth: chatDepthVal,
+      }, chatAbort.signal);
+      if (r.quota) { SF.quota = r.quota; SF.plan = r.quota.plan || SF.plan; }
+      typing.remove();
+      conv.msgs.push({ role: 'assistant', content: r.content, t: Date.now() });
+      save(); renderMsgs(); renderConvList(); updateQuotaUI(); refreshPlanUI();
+      logActivity('ai', 'Вопрос AI Assistant', 2);
+    }
+  } catch (e) {
+    typing.remove();
+    if (e?.name === 'AbortError') { toast('Генерация остановлена', 'info'); }
+    else {
+      const txt = aiErrText(e);
+      if (txt) {
+        const el = document.createElement('div');
+        el.className = 'msg msg-ai';
+        el.innerHTML = `<div class="msg-ava ai"><svg class="ic ic-sm"><use href="#i-spark"/></svg></div>
+          <div class="msg-body"><div class="md-p" style="color:var(--err)">${esc(txt)}</div>
+          <button class="btn btn-ghost btn-sm mt-8" id="chat-retry">Повторить</button></div>`;
+        $('#chat-msgs').appendChild(el);
+        $('#chat-msgs').scrollTop = $('#chat-msgs').scrollHeight;
+        $('#chat-retry').onclick = () => {
+          el.remove();
+          sendChat(lastUserText(activeConv()));
+        };
+      }
+    }
+  } finally {
+    chatBusy = false;
+    $('#chat-send').style.display = ''; $('#chat-stop').style.display = 'none';
+    chatAbort = null;
+  }
+}
+function autoGrow(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(180, ta.scrollHeight) + 'px'; }
+$('#chat-send').addEventListener('click', () => sendChat());
+$('#chat-stop').addEventListener('click', () => chatAbort && chatAbort.abort());
+$('#chat-new').addEventListener('click', () => { newChat(); renderConvList(); renderMsgs(); });
+$('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+$('#chat-input').addEventListener('input', e => autoGrow(e.target));
+$('#chat-depth').addEventListener('click', e => {
+  const b = e.target.closest('[data-depth]');
+  if (!b) return;
+  if (b.dataset.depth === 'expert' && !isPremium()) { upsell('expert'); return; }
+  chatDepthVal = b.dataset.depth;
+  $$('#chat-depth button').forEach(x => x.classList.toggle('on', x === b));
+});
+$('#chat-export').addEventListener('click', () => {
+  if (!isPremium()) { upsell('export'); return; }
+  const conv = activeConv();
+  if (!conv || !conv.msgs.length) { toast('Диалог пуст', 'info'); return; }
+  const txt = conv.msgs.map(m => (m.role === 'user' ? 'Я: ' : 'StudyFlow AI: ') + m.content).join('\n\n---\n\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+  a.download = 'studyflow-dialog.txt';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+function renderChat() {
+  renderConvList(); renderMsgs(); updateQuotaUI(); refreshPlanUI();
+  $$('#chat-depth button').forEach(b => {
+    b.classList.toggle('on', b.dataset.depth === chatDepthVal);
+    const lock = b.dataset.depth === 'expert' && !isPremium();
+    b.style.opacity = lock ? .55 : 1;
+  });
+}
+RENDER.ai = renderChat;
+
+/* ================= Генератор тестов ================= */
+const SUBJECT_TOPICS = {
+  'Математика': ['Дроби', 'Проценты', 'Уравнения', 'Квадратные уравнения', 'Прогрессии'],
+  'Алгебра': ['Функции и графики', 'Неравенства', 'Логарифмы', 'Тригонометрия'],
+  'Геометрия': ['Треугольники', 'Окружность', 'Площади фигур', 'Теорема Пифагора'],
+  'Физика': ['Кинематика', 'Законы Ньютона', 'Электрический ток', 'Оптика'],
+  'Химия': ['Строение атома', 'Типы химических реакций', 'Растворы', 'Органическая химия'],
+  'Биология': ['Клетка', 'Генетика', 'Эволюция', 'Экосистемы'],
+  'История': ['Древний мир', 'Средние века', 'Великие географические открытия', 'XX век'],
+  'География': ['Климат', 'Рельеф', 'Население мира', 'Природные зоны'],
+  'Английский язык': ['Времена глагола', 'Неправильные глаголы', 'Лексика по теме «Школа»'],
+  'Информатика': ['Системы счисления', 'Алгоритмы', 'Логика', 'Программирование на Python'],
+  'Русский язык': ['Орфография', 'Пунктуация', 'Части речи'],
+  'Литература': ['Русская классика XIX века', 'Поэзия Серебряного века'],
+  'Обществознание': ['Право', 'Экономика', 'Человек и общество'],
+};
+let qState = null, quizDiff = 2, quizCount = 5;
+function renderQuiz() {
+  updateQuotaUI(); refreshPlanUI();
+  const noAI = SF.mode !== 'server' || !SF.ai;
+  const n = $('#quiz-ai-notice');
+  n.hidden = !noAI;
+  if (noAI) {
+    $('#quiz-ai-notice-body').innerHTML = aiSetupHTML() +
+      `<div class="mt-14 row" style="gap:10px;flex-wrap:wrap">
+        <span class="small muted">Или попробуйте интерфейс на демо-тесте <b>(3 вопроса, без ИИ, помечен как демо)</b>:</span>
+        <button class="btn btn-ghost btn-sm" id="quiz-demo">Демо-тест</button>
+      </div>`;
+    $('#quiz-demo').onclick = () => startDemo();
+  }
+}
+RENDER.quiz = renderQuiz;
+$('#q-subject').addEventListener('change', updateDatalist);
+function updateDatalist() {
+  $('#q-topics').innerHTML = (SUBJECT_TOPICS[$('#q-subject').value] || []).map(t => `<option value="${esc(t)}">`).join('');
+}
+updateDatalist();
+$('#quiz-diff').addEventListener('click', e => {
+  const b = e.target.closest('[data-diff]'); if (!b) return;
+  quizDiff = Number(b.dataset.diff);
+  $$('#quiz-diff button').forEach(x => x.classList.toggle('on', x === b));
+});
+$('#quiz-count').addEventListener('click', e => {
+  const b = e.target.closest('[data-count]'); if (!b) return;
+  quizCount = Number(b.dataset.count);
+  $$('#quiz-count button').forEach(x => x.classList.toggle('on', x === b));
+});
+const DIFF_NAME = { 1: 'легко', 2: 'средне', 3: 'сложно' };
+$('#quiz-gen').addEventListener('click', generateQuiz);
+async function generateQuiz() {
+  const subject = $('#q-subject').value.trim();
+  const topic = $('#q-topic').value.trim();
+  if (!topic) { toast('Введите тему теста', 'info'); $('#q-topic').focus(); return; }
+  if (SF.mode !== 'server' || !SF.ai) {
+    $('#quiz-ai-notice').hidden = false;
+    $('#quiz-ai-notice').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    toast('Сначала подключите ИИ — или пройдите демо-тест', 'info');
+    return;
+  }
+  const btn = $('#quiz-gen');
+  btn.disabled = true;
+  $('#quiz-result').hidden = true;
+  const run = $('#quiz-run');
+  run.hidden = false;
+  run.innerHTML = `<div class="card"><div class="row" style="gap:12px"><span class="typing dots"><span></span><span></span><span></span></span>
+    <b>ИИ составляет тест: ${esc(subject)} — ${esc(topic)} (${DIFF_NAME[quizDiff]}, ${quizCount} вопросов)…</b></div>
+    <div class="skeleton mt-14" style="height:90px"></div><div class="skeleton mt-8" style="height:90px"></div></div>`;
+  run.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    const r = await aiPost('/api/quiz', { subject, topic, difficulty: quizDiff, count: quizCount });
+    if (r.quota) { SF.quota = r.quota; SF.plan = r.quota.plan || SF.plan; }
+    updateQuotaUI(); refreshPlanUI();
+    startQuiz(r.questions, { subject, topic, diff: quizDiff, kind: 'ai' });
+  } catch (e) {
+    const txt = aiErrText(e);
+    run.innerHTML = txt
+      ? `<div class="card ai-notice" style="border-color:rgba(248,113,113,.4)"><div class="row mb-14"><svg class="ic" style="color:var(--err)"><use href="#i-warn"/></svg><b>Не получилось сгенерировать тест</b></div><p class="small muted">${esc(txt)}</p><button class="btn btn-primary btn-sm mt-14" id="quiz-retry">Повторить</button></div>`
+      : '';
+    const rb = $('#quiz-retry'); if (rb) rb.onclick = generateQuiz;
+  } finally {
+    btn.disabled = false;
+  }
+}
+function shuffleOpts(q) {
+  const order = [0, 1, 2, 3];
+  for (let i = 3; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  q._order = order;
+}
+function startQuiz(questions, meta) {
+  questions.forEach(shuffleOpts);
+  qState = { questions, idx: 0, score: 0, meta, wrong: [], answered: false };
+  $('#quiz-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  renderQuestion();
+}
+function renderQuestion() {
+  const { questions, idx } = qState;
+  const q = questions[idx];
+  const run = $('#quiz-run');
+  run.hidden = false;
+  const letters = ['А', 'Б', 'В', 'Г'];
+  run.innerHTML = `
+    <div class="card" id="quiz-qcard">
+      <div class="row-between mb-14" style="gap:10px">
+        <b>Вопрос ${idx + 1} из ${questions.length}</b>
+        <span class="chip" style="pointer-events:none">${esc(qState.meta.subject)} · ${esc(qState.meta.topic)}</span>
+      </div>
+      <div class="quiz-progress"><i style="width:${(idx / questions.length) * 100}%"></i></div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:16px;line-height:1.45">${esc(q.q)}</div>
+      <div id="quiz-opts">${q._order.map((oi, di) =>
+        `<button class="opt-btn" data-o="${oi}"><span class="opt-letter">${letters[di]}</span><span>${esc(q.options[oi])}</span></button>`).join('')}</div>
+      <div id="quiz-feedback"></div>
+    </div>`;
+  $$('#quiz-opts .opt-btn').forEach(b => b.addEventListener('click', () => answerQuiz(Number(b.dataset.o))));
+}
+function answerQuiz(origIdx) {
+  if (!qState || qState.answered) return;
+  qState.answered = true;
+  const q = qState.questions[qState.idx];
+  const ok = origIdx === q.answer;
+  if (ok) qState.score++; else qState.wrong.push(q);
+  $$('#quiz-opts .opt-btn').forEach(b => {
+    const oi = Number(b.dataset.o);
+    b.disabled = true;
+    if (oi === q.answer) b.classList.add('correct');
+    else if (oi === origIdx) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  $('#quiz-feedback').innerHTML = `
+    <div class="explain-box"><b>${ok ? '✓ Верно!' : '✗ Неправильно.'}</b> Правильный ответ: <b>${esc(q.options[q.answer])}</b>${q.explain ? '<br>' + esc(q.explain) : ''}</div>
+    <button class="btn btn-primary mt-14" id="quiz-next">${qState.idx + 1 < qState.questions.length ? 'Следующий вопрос' : 'Завершить тест'}</button>`;
+  $('#quiz-next').onclick = () => {
+    qState.idx++; qState.answered = false;
+    if (qState.idx < qState.questions.length) renderQuestion();
+    else finishQuiz();
+  };
+}
+function finishQuiz() {
+  const { questions, score, meta } = qState;
+  const pct = Math.round(score / questions.length * 100);
+  S.tests.unshift({ t: Date.now(), subject: meta.subject, topic: meta.topic, diff: meta.diff, score, total: questions.length, pct, kind: meta.kind });
+  if (S.tests.length > 150) S.tests.length = 150;
+  const key = meta.subject + '::' + meta.topic;
+  const prev = S.topics[key];
+  S.topics[key] = { s: meta.subject, u: meta.topic, pct: Math.max(pct, prev?.pct || 0), at: Date.now() };
+  logActivity('test', `Тест: ${meta.subject} — ${meta.topic} (${score}/${questions.length})`, 15);
+  const grade = pct >= 90 ? ['Блестяще!', 'Вы отлично знаете эту тему.', 'var(--ok)']
+    : pct >= 70 ? ['Хороший результат!', 'Ещё немного практики — и будет идеально.', 'var(--ok)']
+    : pct >= 50 ? ['Неплохо!', 'Разберите ошибки и пройдите тест снова.', 'var(--gold)']
+    : ['Есть над чем поработать.', 'Попросите ИИ объяснить тему в разделе AI Assistant.', 'var(--err)'];
+  const run = $('#quiz-run'), res = $('#quiz-result');
+  run.innerHTML = '';
+  res.hidden = false;
+  const demoTag = meta.kind === 'demo' ? ' <span class="pill">демо-тест, без ИИ</span>' : '';
+  res.innerHTML = `
+    <div class="card center">
+      <h3 class="mb-14">Результат теста ${demoTag}</h3>
+      <div class="ring result-ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle class="bgc" cx="75" cy="75" r="66"/>
+          <circle class="fgc" id="res-ring" cx="75" cy="75" r="66" stroke-dasharray="414.7" stroke-dashoffset="414.7" style="${pct >= 70 ? '' : 'stroke:url(#ringGradGold)'}"/>
+        </svg>
+        <div class="ring-val"><span id="res-pct">0%</span><small>${score} из ${questions.length}</small></div>
+      </div>
+      <div style="font-size:19px;font-weight:800;margin-top:14px;color:${grade[2]}">${grade[0]}</div>
+      <p class="muted small" style="margin-top:4px">${grade[1]}</p>
+      ${qState.wrong.length ? `<div style="text-align:left;margin-top:20px"><h4 class="mb-14">Разбор ошибок (${qState.wrong.length})</h4>
+        ${qState.wrong.map(w => `<div class="mini-card" style="flex-wrap:wrap"><div style="flex:1;min-width:220px"><b>${esc(w.q)}</b><div class="small muted mt-8">Правильный ответ: <b style="color:var(--ok)">${esc(w.options[w.answer])}</b>${w.explain ? ' — ' + esc(w.explain) : ''}</div></div></div>`).join('')}</div>` : ''}
+      <div class="row mt-20" style="justify-content:center;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-ghost" id="quiz-retake"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Пройти снова (те же вопросы)</button>
+        <button class="btn btn-primary" id="quiz-new"><svg class="ic ic-sm"><use href="#i-zap"/></svg>Сгенерировать новый тест</button>
+      </div>
+    </div>`;
+  const C = 414.7;
+  setTimeout(() => { const r = $('#res-ring'); if (r) r.style.strokeDashoffset = C * (1 - pct / 100); }, 60);
+  animNum($('#res-pct'), pct, '%');
+  if (pct >= 80) confetti();
+  res.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  $('#quiz-retake').onclick = () => startQuiz(questions, meta);
+  $('#quiz-new').onclick = () => { res.hidden = true; run.hidden = true; $('#q-topic').focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+}
+/* демо-банк (без ИИ, только для проверки интерфейса) */
+const DEMO_QUIZ = {
+  'Математика': [
+    { q: 'Сколько будет 7 × 8?', options: ['54', '56', '58', '48'], answer: 1, explain: '7 × 8 = 56 (таблица умножения).' },
+    { q: 'Чему равен √144?', options: ['10', '11', '12', '14'], answer: 2, explain: '12² = 144, значит √144 = 12.' },
+    { q: 'Решите уравнение 2x + 6 = 20', options: ['x = 5', 'x = 6', 'x = 7', 'x = 8'], answer: 2, explain: '2x = 14, x = 7.' },
+  ],
+  'Физика': [
+    { q: 'В чём измеряется сила в системе СИ?', options: ['Джоуль', 'Ньютон', 'Ватт', 'Паскаль'], answer: 1, explain: 'Сила измеряется в ньютонах (Н).' },
+    { q: 'Какова примерно скорость света в вакууме?', options: ['300 км/с', '3 000 км/с', '300 000 км/с', 'бесконечна'], answer: 2, explain: '≈ 300 000 км/с (3·10⁸ м/с).' },
+    { q: 'Какой прибор измеряет силу тока?', options: ['Вольтметр', 'Амперметр', 'Омметр', 'Барометр'], answer: 1, explain: 'Силу тока измеряет амперметр.' },
+  ],
+  'История': [
+    { q: 'В каком году началась Великая Отечественная война?', options: ['1939', '1941', '1943', '1945'], answer: 1, explain: '22 июня 1941 года.' },
+    { q: 'Кто был первым президентом США?', options: ['Линкольн', 'Вашингтон', 'Джефферсон', 'Адамс'], answer: 1, explain: 'Джордж Вашингтон (1789–1797).' },
+    { q: 'В каком году пала Берлинская стена?', options: ['1985', '1989', '1991', '1993'], answer: 1, explain: 'В ноябре 1989 года.' },
+  ],
+};
+function startDemo() {
+  const subject = $('#q-subject').value.trim();
+  const bank = DEMO_QUIZ[subject];
+  if (!bank) { toast('Для демо доступны: Математика, Физика, История', 'info'); return; }
+  startQuiz(bank.map(q => ({ ...q, options: [...q.options] })), { subject: subject, topic: 'Демо', diff: 1, kind: 'demo' });
+}
+</script>
+<script>
+'use strict';
+/* ================= Flashcards ================= */
+function totalCards() { return S.decks.reduce((a, d) => a + d.cards.length, 0); }
+function masteredCards() { return S.decks.reduce((a, d) => a + d.cards.filter(c => c.known).length, 0); }
+function canAddCards(n) {
+  if (isPremium()) return true;
+  if (totalCards() + n > 30) { upsell('cardsLimit'); return false; }
+  return true;
+}
+function renderCards() {
+  const grid = $('#cards-decks');
+  const study = $('#cards-study');
+  study.hidden = true;
+  grid.hidden = false;
+  $('#cards-total-chip').textContent = pluralN(totalCards(), ['карточка', 'карточки', 'карточек']) + ` · выучено ${masteredCards()}`;
+  $('#cards-limit-hint').textContent = isPremium()
+    ? 'Premium: карточки без ограничений. ИИ-колоды доступны по любой теме.'
+    : 'На тарифе Free — до 30 карточек. Premium снимает ограничение.';
+  if (!S.decks.length) {
+    grid.innerHTML = `<div class="card center" style="grid-column:1/-1;padding:40px">
+      <svg class="ic ic-lg muted" style="width:44px;height:44px;margin-bottom:12px"><use href="#i-cards"/></svg>
+      <p class="muted">Колод пока нет. Создайте первую — и начните учить!</p></div>`;
+    return;
+  }
+  grid.innerHTML = S.decks.map(d => {
+    const known = d.cards.filter(c => c.known).length;
+    const pct = d.cards.length ? Math.round(known / d.cards.length * 100) : 0;
+    return `<div class="card card-hover deck-card" data-deck="${d.id}">
+      <div class="row-between" style="align-items:flex-start">
+        <div style="min-width:0"><b>${esc(d.title)}</b>
+        <div class="small muted">${pluralN(d.cards.length, ['карточка', 'карточки', 'карточек'])} · выучено ${known}</div></div>
+        <span class="chip ${pct === 100 && d.cards.length ? '' : ''}" style="pointer-events:none;font-size:11px">${pct}%</span>
+      </div>
+      <div class="pbar mt-14"><i class="${pct === 100 ? 'ok' : ''}" style="width:${pct}%"></i></div>
+      <div class="row mt-14" style="gap:8px">
+        <button class="btn btn-primary btn-sm" data-study="${d.id}" style="flex:1"><svg class="ic ic-sm"><use href="#i-zap"/></svg>Учить</button>
+        <button class="icon-btn" data-edit="${d.id}" title="Редактировать" style="width:34px;height:34px"><svg class="ic ic-sm"><use href="#i-edit"/></svg></button>
+        <button class="icon-btn" data-deldeck="${d.id}" title="Удалить колоду" style="width:34px;height:34px"><svg class="ic ic-sm"><use href="#i-trash"/></svg></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+RENDER.cards = renderCards;
+$('#cards-decks').addEventListener('click', e => {
+  const st = e.target.closest('[data-study]');
+  if (st) return studyDeck(st.dataset.study);
+  const ed = e.target.closest('[data-edit]');
+  if (ed) return editDeck(ed.dataset.edit);
+  const dl = e.target.closest('[data-deldeck]');
+  if (dl) {
+    const deck = S.decks.find(d => d.id === dl.dataset.deldeck);
+    confirmModal('Удалить колоду?', '«' + (deck?.title || '') + '» и все её карточки будут удалены.', 'Удалить', () => {
+      S.decks = S.decks.filter(d => d.id !== dl.dataset.deldeck);
+      save(); renderCards();
+    });
+  }
+});
+$('#deck-create').addEventListener('click', () => {
+  const t = $('#deck-title').value.trim();
+  if (!t) { toast('Введите название колоды', 'info'); return; }
+  S.decks.unshift({ id: uid(), title: t, t: Date.now(), cards: [] });
+  $('#deck-title').value = '';
+  save(); renderCards(); toast('Колода создана', 'success');
+});
+$('#cards-ai-gen').addEventListener('click', async () => {
+  if (!isPremium()) { upsell('cards'); return; }
+  const topic = $('#cards-ai-topic').value.trim();
+  if (!topic) { toast('Введите тему для ИИ', 'info'); return; }
+  if (SF.mode !== 'server' || !SF.ai) { toast('ИИ не подключён — инструкция в Настройках', 'info'); go('settings'); return; }
+  const btn = $('#cards-ai-gen');
+  btn.disabled = true;
+  toast('ИИ создаёт колоду «' + topic + '»…', 'info');
+  try {
+    const r = await aiPost('/api/cards', { topic, count: 8 });
+    const cards = r.cards.map(c => ({ id: uid(), f: c.f, b: c.b, known: false }));
+    S.decks.unshift({ id: uid(), title: topic.slice(0, 60), t: Date.now(), cards });
+    $('#cards-ai-topic').value = '';
+    save(); renderCards();
+    toast('Готово: ИИ создал ' + pluralN(cards.length, ['карточку', 'карточки', 'карточек']), 'success');
+  } catch (e) { const t = aiErrText(e); if (t) toast(t, 'error'); }
+  finally { btn.disabled = false; }
+});
+/* --- режим изучения --- */
+let cs = null;
+function studyDeck(deckId) {
+  const deck = S.decks.find(d => d.id === deckId);
+  if (!deck) return;
+  if (!deck.cards.length) { editDeck(deckId); return; }
+  let queue = deck.cards.filter(c => !c.known).map(c => c.id);
+  if (!queue.length) queue = deck.cards.map(c => c.id);
+  cs = { deckId, queue, idx: 0, known: 0, repeats: 0, total: queue.length, flipped: false };
+  $('#cards-decks').hidden = true;
+  renderStudy();
+}
+function studyDeckObj() { return S.decks.find(d => d.id === cs.deckId); }
+function renderStudy() {
+  const deck = studyDeckObj();
+  const st = $('#cards-study');
+  st.hidden = false;
+  if (!cs.queue.length) {
+    st.innerHTML = `<div class="card center" style="padding:44px">
+      <svg class="ic ic-lg" style="color:var(--ok);width:52px;height:52px"><use href="#i-award"/></svg>
+      <h3 style="margin-top:12px">Колода «${esc(deck.title)}» изучена!</h3>
+      <p class="muted small mt-8">Знаю: ${cs.known} · повторов: ${cs.repeats}</p>
+      <div class="row mt-20" style="justify-content:center;gap:10px">
+        <button class="btn btn-primary" id="study-restart"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Пройти заново</button>
+        <button class="btn btn-ghost" id="study-back2">К колодам</button>
+      </div></div>`;
+    $('#study-back2').onclick = closeStudy;
+    $('#study-restart').onclick = () => studyDeck(cs.deckId);
+    confetti(30);
+    return;
+  }
+  const card = deck.cards.find(c => c.id === cs.queue[cs.idx]);
+  st.innerHTML = `
+    <div class="card" style="padding:20px 22px">
+      <div class="row-between mb-14">
+        <button class="btn btn-ghost btn-sm" id="study-back"><svg class="ic ic-sm"><use href="#i-x"/></svg>Выйти</button>
+        <b>${esc(deck.title)}</b>
+        <span class="chip" style="pointer-events:none">${cs.idx + 1} / ${cs.queue.length}</span>
+      </div>
+      <div class="pbar mb-20"><i style="width:${(cs.idx / cs.queue.length) * 100}%"></i></div>
+      <div class="fc-stage" style="max-width:560px">
+        <div class="fc" id="fc-card" style="min-height:250px;height:280px">
+          <div class="fc-inner">
+            <div class="fc-face"><div class="fc-label">Вопрос</div><div class="fc-text">${esc(card.f)}</div><div class="fc-hint">нажмите на карточку, чтобы перевернуть</div></div>
+            <div class="fc-face back"><div class="fc-label">Ответ</div><div class="fc-text">${esc(card.b)}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-actions">
+        <button class="btn btn-ghost btn-lg" id="fc-repeat"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Повторить</button>
+        <button class="btn btn-primary btn-lg" id="fc-know"><svg class="ic ic-sm"><use href="#i-check"/></svg>Знаю</button>
+      </div>
+    </div>`;
+  $('#fc-card').addEventListener('click', () => { $('#fc-card').classList.toggle('flipped'); });
+  $('#study-back').onclick = closeStudy;
+  $('#fc-know').onclick = () => {
+    const c = deck.cards.find(x => x.id === cs.queue[cs.idx]);
+    if (c && !c.known) { c.known = true; cs.known++; logActivity('card', 'Выучена карточка: ' + c.f.slice(0, 40), 2); }
+    else if (c) { cs.known++; }
+    advanceStudy();
+  };
+  $('#fc-repeat').onclick = () => {
+    cs.queue.push(cs.queue[cs.idx]);
+    cs.repeats++;
+    advanceStudy();
+  };
+}
+function advanceStudy() {
+  cs.idx++;
+  save();
+  renderStudy();
+}
+function closeStudy() { cs = null; renderCards(); }
+/* --- редактор колоды --- */
+function editDeck(deckId) {
+  const deck = S.decks.find(d => d.id === deckId);
+  if (!deck) return;
+  const st = $('#cards-study');
+  $('#cards-decks').hidden = true;
+  st.hidden = false;
+  st.innerHTML = `
+    <div class="card">
+      <div class="row-between mb-14">
+        <button class="btn btn-ghost btn-sm" id="ed-back"><svg class="ic ic-sm"><use href="#i-x"/></svg>Назад</button>
+        <b style="font-size:16px">${esc(deck.title)}</b><span class="spacer"></span>
+        <span class="chip" style="pointer-events:none">${deck.cards.length ? pluralN(deck.cards.length, ['карточка', 'карточки', 'карточек']) : 'пусто'}</span>
+      </div>
+      <div id="ed-list"></div>
+      <div class="card grad-brd mt-14" style="padding:16px">
+        <h4 class="mb-14">Новая карточка</h4>
+        <div class="field"><label class="lbl">Лицевая сторона (вопрос / термин)</label><input class="inp" id="ed-f" maxlength="300"></div>
+        <div class="field"><label class="lbl">Обратная сторона (ответ / определение)</label><input class="inp" id="ed-b" maxlength="600"></div>
+        <button class="btn btn-primary" id="ed-add"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Добавить карточку</button>
+      </div>
+    </div>`;
+  const renderList = () => {
+    $('#ed-list').innerHTML = deck.cards.length ? deck.cards.map((c, i) => `
+      <div class="mini-card">
+        <span class="chip" style="pointer-events:none;font-size:11px;padding:3px 9px">${i + 1}</span>
+        <div style="flex:1;min-width:0"><input class="inp" data-f="${c.id}" value="${esc(c.f)}" style="margin-bottom:6px;font-weight:600">
+        <input class="inp" data-b="${c.id}" value="${esc(c.b)}" class="small"></div>
+        <button class="icon-btn" data-cdel="${c.id}" title="Удалить" style="width:32px;height:32px"><svg class="ic ic-sm"><use href="#i-trash"/></svg></button>
+      </div>`).join('') : '<p class="muted small">Карточек пока нет — добавьте первую ниже.</p>';
+    $$('#ed-list [data-cdel]').forEach(b => b.onclick = () => {
+      deck.cards = deck.cards.filter(c => c.id !== b.dataset.cdel);
+      save(); renderList(); renderCards();
+    });
+    $$('#ed-list [data-f]').forEach(inp => inp.onchange = () => {
+      const c = deck.cards.find(x => x.id === inp.dataset.f);
+      if (c && inp.value.trim()) { c.f = inp.value.trim(); save(); }
+    });
+    $$('#ed-list [data-b]').forEach(inp => inp.onchange = () => {
+      const c = deck.cards.find(x => x.id === inp.dataset.b);
+      if (c && inp.value.trim()) { c.b = inp.value.trim(); save(); }
+    });
+  };
+  renderList();
+  $('#ed-back').onclick = () => { st.hidden = true; $('#cards-decks').hidden = false; renderCards(); };
+  $('#ed-add').onclick = () => {
+    const f = $('#ed-f').value.trim(), b = $('#ed-b').value.trim();
+    if (!f || !b) { toast('Заполните обе стороны карточки', 'info'); return; }
+    if (!canAddCards(1)) return;
+    deck.cards.push({ id: uid(), f, b, known: false });
+    save(); $('#ed-f').value = ''; $('#ed-b').value = '';
+    renderList(); renderCards();
+  };
+}
+</script>
+
+<script>
+'use strict';
+/* ================= English ================= */
+const WORDS = [
+  ...['cat|кот, кошка|The cat is sleeping on the sofa.', 'dog|собака|My dog likes to play fetch.', 'house|дом|They live in a big house.', 'water|вода|Drink more water every day.', 'apple|яблоко|An apple a day keeps the doctor away.', 'book|книга|This book is very interesting.', 'friend|друг|My best friend lives next door.', 'school|школа|I go to school by bus.', 'day|день|Today is a beautiful day.', 'night|ночь|The stars shine at night.', 'sun|солнце|The sun rises in the east.', 'rain|дождь|I love the sound of rain.', 'tree|дерево|An old tree grows near our house.', 'car|машина|His car is very fast.', 'city|город|London is a huge city.', 'food|еда|Italian food is delicious.', 'family|семья|My family has four people.', 'mother|мама|My mother cooks very well.', 'father|папа|My father works as an engineer.', 'red|красный|She has a red backpack.', 'big|большой|Whales are big animals.', 'run|бежать|I run in the park every morning.', 'eat|есть|We eat dinner together.', 'happy|счастливый|The good news made everyone happy.']
+    .map(s => { const [en, ru, ex] = s.split('|'); return { en, ru, ex, s: 'A1' }; }),
+  ...['weather|погода|The weather is getting warmer.', 'journey|поездка|It was a long journey home.', 'kitchen|кухня|We renovated our kitchen last month.', 'bedroom|спальня|The bedroom is upstairs.', 'garden|сад|Grandma grows roses in her garden.', 'market|рынок|Fresh vegetables are cheaper at the market.', 'holiday|отпуск, праздник|We are going to Spain on holiday.', 'ticket|билет|I bought a ticket for the evening train.', 'answer|ответ|His answer surprised the teacher.', 'question|вопрос|Ask me any question.', 'weekend|выходные|What did you do at the weekend?', 'birthday|день рождения|Her birthday is in May.', 'present|подарок|Thank you for the present!', 'cinema|кинотеатр|Let us go to the cinema tonight.', 'music|музыка|This music helps me focus.', 'dance|танцевать|They dance very well.', 'learn|учить|I learn ten new words a day.', 'write|писать|Write your name at the top.', 'clean|чистый; убирать|Keep your room clean.', 'quiet|тихий|The library is a quiet place.', 'loud|громкий|The music is too loud.', 'cheap|дешёвый|This phone was quite cheap.', 'expensive|дорогой|That jacket is too expensive.', 'interesting|интересный|It was an interesting film.']
+    .map(s => { const [en, ru, ex] = s.split('|'); return { en, ru, ex, s: 'A2' }; }),
+  ...['achieve|достигать|She achieved her goal of running a marathon.', 'experience|опыт; переживать|He has experience in teaching.', 'opportunity|возможность|This job is a great opportunity for me.', 'environment|окружающая среда|We must protect the environment.', 'government|правительство|The government announced new rules.', 'encourage|поощрять, поддерживать|Teachers encourage students to ask questions.', 'develop|развивать|Children develop skills through play.', 'increase|увеличивать|Prices increased by ten percent.', 'provide|обеспечивать, предоставлять|The school provides free lunch.', 'decision|решение|It was a difficult decision.', 'society|общество|Technology changes society fast.', 'culture|культура|Language is a part of culture.', 'ancient|древний|They study ancient Rome.', 'attempt|пытаться; попытка|He attempted the exam twice.', 'careful|осторожный|Be careful with the hot pan.', 'describe|описывать|Describe the picture in five sentences.', 'education|образование|Education opens many doors.', 'familiar|знакомый|Her face looks familiar.', 'improve|улучшать|I want to improve my English.', 'necessary|необходимый|Water is necessary for life.']
+    .map(s => { const [en, ru, ex] = s.split('|'); return { en, ru, ex, s: 'B1' }; }),
+  ...['nevertheless|тем не менее|It was raining; nevertheless, we went out.', 'sustainable|устойчивый (экологичный)|We need sustainable energy sources.', 'overwhelm|переполнять, подавлять|Do not overwhelm yourself with tasks.', 'acknowledge|признавать|He acknowledged his mistake.', 'crucial|решающий, критически важный|Practice is crucial for success.', 'incentive|стимул|Bonuses are an incentive to work harder.', 'bias|предвзятость|The study avoided any bias.', 'comprehensive|всесторонний|The guide gives comprehensive coverage of the topic.', 'deliberate|намеренный|It was a deliberate choice.', 'emerge|появляться|New industries emerge every decade.', 'feasible|осуществимый|The plan is feasible within a month.', 'implement|внедрять|The school implemented a new schedule.', 'negotiate|вести переговоры|They negotiated a better price.', 'profound|глубокий|The book had a profound effect on me.', 'tolerate|терпеть, допускать|I will not tolerate rude behaviour.', 'assume|предполагать|Let us assume the train is on time.']
+    .map(s => { const [en, ru, ex] = s.split('|'); return { en, ru, ex, s: 'B2' }; }),
+];
+const PACKS = [
+  { title: 'Неправильные глаголы', icon: 'i-zap', desc: 'Три формы самых нужных глаголов', words: [
+    ['go / went / gone', 'идти', 'I went to the store yesterday.'],
+    ['be / was / been', 'быть', 'She has been to Paris twice.'],
+    ['see / saw / seen', 'видеть', 'I have seen that film already.'],
+    ['take / took / taken', 'брать, принимать', 'He took the last cookie.'],
+    ['make / made / made', 'делать', 'This bridge was made in 1932.'],
+    ['know / knew / known', 'знать', 'She has known him for years.'],
+    ['think / thought / thought', 'думать', 'I thought the exam was easy.'],
+    ['come / came / come', 'приходить', 'He came home late.'],
+    ['give / gave / given', 'давать', 'The teacher gave us homework.'],
+    ['find / found / found', 'находить', 'I found my keys under the sofa.'],
+    ['bring / brought / brought', 'приносить', 'She brought snacks to the party.'],
+    ['buy / bought / bought', 'покупать', 'We bought a new car.'],
+    ['teach / taught / taught', 'учить (кого-то)', 'He taught me chess.'],
+    ['write / wrote / written', 'писать', 'She has written three chapters.'],
+    ['speak / spoke / spoken', 'говорить', 'He spoke to the class yesterday.'],
+    ['break / broke / broken', 'ломать', 'The window was broken.'],
+    ['choose / chose / chosen', 'выбирать', 'They have chosen a new captain.'],
+    ['drive / drove / driven', 'водить', 'She has driven this route before.'],
+  ] },
+  { title: 'Фразовые глаголы', icon: 'i-bulb', desc: 'Everyday phrasal verbs с примерами', words: [
+    ['give up', 'сдаваться, бросать', 'Never give up on your dreams.'],
+    ['look for', 'искать', 'I am looking for my notebook.'],
+    ['look after', 'заботиться о', 'She looks after her little brother.'],
+    ['turn on', 'включать', 'Turn on the lights, please.'],
+    ['turn off', 'выключать', 'Do not forget to turn off the TV.'],
+    ['put on', 'надевать', 'Put on your jacket, it is cold.'],
+    ['take off', 'снимать; взлетать', 'The plane took off on time.'],
+    ['get up', 'вставать', 'I get up at seven every day.'],
+    ['find out', 'выяснять', 'We found out the truth later.'],
+    ['come back', 'возвращаться', 'He came back home in June.'],
+    ['go on', 'продолжать', 'The show must go on.'],
+    ['set up', 'учреждать, настраивать', 'They set up a small business.'],
+  ] },
+  { title: 'Деловая лексика', icon: 'i-award', desc: 'English для будущей карьеры', words: [
+    ['deadline', 'срок, дедлайн', 'The deadline is next Friday.'],
+    ['meeting', 'встреча, собрание', 'The meeting starts at nine.'],
+    ['employee', 'сотрудник', 'The company has 200 employees.'],
+    ['employer', 'работодатель', 'Ask your employer about training.'],
+    ['salary', 'зарплата', 'They offered a higher salary.'],
+    ['invoice', 'счёт на оплату', 'Please send the invoice by email.'],
+    ['contract', 'договор', 'Read the contract before signing.'],
+    ['negotiation', 'переговоры', 'The negotiation took three hours.'],
+    ['startup', 'стартап', 'He works at a tech startup.'],
+    ['revenue', 'выручка', 'Revenue grew by 20 percent.'],
+    ['customer', 'клиент', 'Customers can leave reviews online.'],
+    ['skill', 'навык', 'Teamwork is a key skill.'],
+  ] },
+];
+let enLevel = '', enSearch = '';
+function allWords() {
+  const built = WORDS.map((w, i) => ({ ...w, id: w.s + ':' + w.en.toLowerCase(), custom: false }));
+  const mine = S.customWords.map(w => ({ ...w, id: 'c:' + w.id, custom: true }));
+  return built.concat(mine);
+}
+function renderEnglish() {
+  $$('.etab').forEach(p => p.hidden = true);
+  $$('.etabs .chip').forEach(c => c.classList.toggle('on', c.dataset.etab === enTab));
+  $('#etab-' + enTab).hidden = false;
+  const lv = $('#en-levels');
+  lv.innerHTML = ['', 'A1', 'A2', 'B1', 'B2'].map(l =>
+    `<button class="chip ${enLevel === l ? 'on' : ''}" data-lv="${l}">${l || 'Все уровни'}</button>`).join('');
+  $$('#en-levels .chip').forEach(b => b.onclick = () => { enLevel = b.dataset.lv; renderEnglish(); });
+  const learnedN = Object.keys(S.learned).length;
+  $('#en-learned-count').textContent = learnedN;
+  const elLlbl = $('#en-learned-lbl'); if (elLlbl) elLlbl.textContent = plural(learnedN, ['слово', 'слова', 'слов']);
+  if (enTab === 'words') renderWordList();
+  if (enTab === 'mine') renderMine();
+  if (enTab === 'test') renderEnTestSetup();
+  if (enTab === 'packs') renderPacks();
+  refreshPlanUI();
+}
+let enTab = 'words';
+RENDER.english = renderEnglish;
+$$('.etabs .chip').forEach(c => c.addEventListener('click', () => { enTab = c.dataset.etab; renderEnglish(); }));
+$('#en-search').addEventListener('input', e => { enSearch = e.target.value.trim().toLowerCase(); renderWordList(); });
+function wordRow(w) {
+  const learned = !!S.learned[w.id];
+  const prem = isPremium();
+  return `<div class="word-row ${learned ? 'learned' : ''}">
+    <span class="word-en">${esc(w.en)}</span>
+    <span class="word-tr">${esc(w.ru)}</span>
+    <span class="word-lv lv-${w.level || w.s}">${w.level || w.s}</span>
+    <div class="spacer"></div>
+    <button class="icon-btn js-tts" data-tts="${esc(w.en)}" title="${prem ? 'Озвучить' : 'Озвучка — Premium'}" style="width:34px;height:34px;${prem ? '' : 'opacity:.55'}"><svg class="ic ic-sm"><use href="#i-volume"/></svg></button>
+    <button class="btn btn-sm ${learned ? 'btn-danger' : 'btn-ghost'} js-learn" data-learn="${w.id}" data-word="${esc(w.en)}" data-ru="${esc(w.ru)}">${learned ? 'Забыть' : 'Выучил'}</button>
+    ${w.ex ? `<div class="word-ex">${esc(w.ex)}</div>` : ''}
+  </div>`;
+}
+function renderWordList() {
+  let list = WORDS;
+  if (enLevel) list = list.filter(w => w.s === enLevel);
+  if (enSearch) list = list.filter(w => w.en.toLowerCase().includes(enSearch) || w.ru.toLowerCase().includes(enSearch));
+  $('#en-list').innerHTML = list.length
+    ? list.map(w => wordRow({ ...w, id: w.s + ':' + w.en.toLowerCase(), level: w.s })).join('')
+    : '<p class="muted">Ничего не найдено.</p>';
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('.js-tts');
+  if (t) {
+    e.stopPropagation();
+    if (!isPremium()) { upsell('tts'); return; }
+    try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t.dataset.tts); u.lang = 'en-US'; u.rate = .9; speechSynthesis.speak(u); } catch (err) { toast('Синтез речи недоступен в этом браузере', 'error'); }
+    return;
+  }
+  const l = e.target.closest('.js-learn');
+  if (l) {
+    const id = l.dataset.learn;
+    if (S.learned[id]) { delete S.learned[id]; save(); renderEnglish(); renderDashboardIfActive(); }
+    else {
+      S.learned[id] = { at: Date.now() };
+      save();
+      logActivity('word', 'Выучено слово: ' + l.dataset.word + ' — ' + l.dataset.ru, 3);
+      toast('Слово выучено! +3 очка', 'success');
+      renderEnglish(); renderDashboardIfActive();
+    }
+  }
+});
+function renderDashboardIfActive() { if ($('#view-dashboard').classList.contains('active')) renderDashboard(); }
+function renderMine() {
+  const list = $('#en-mine-list');
+  list.innerHTML = S.customWords.length ? S.customWords.map(w => wordRow({ ...w, id: 'c:' + w.id, level: w.level, s: undefined })).join('') : '<p class="muted">Своих слов пока нет — добавьте первое выше.</p>';
+  $$('#en-mine-list .word-row').forEach(row => {
+    const id = row.querySelector('.js-learn')?.dataset.learn;
+    if (!id) return;
+    const del = document.createElement('button');
+    del.className = 'icon-btn';
+    del.title = 'Удалить слово';
+    del.style.cssText = 'width:34px;height:34px';
+    del.innerHTML = '<svg class="ic ic-sm"><use href="#i-trash"/></svg>';
+    del.onclick = () => {
+      S.customWords = S.customWords.filter(w => 'c:' + w.id !== id);
+      delete S.learned[id];
+      save(); renderEnglish();
+    };
+    row.querySelector('.word-lv').after(del);
+  });
+}
+$('#en-add-btn').addEventListener('click', () => {
+  const en = $('#en-add-en').value.trim(), ru = $('#en-add-ru').value.trim();
+  if (!en || !ru) { toast('Заполните слово и перевод', 'info'); return; }
+  if (S.customWords.some(w => w.en.toLowerCase() === en.toLowerCase())) { toast('Такое слово уже есть', 'info'); return; }
+  S.customWords.push({ id: uid(), en, ru, level: $('#en-add-level').value, ex: $('#en-add-ex').value.trim() });
+  $('#en-add-en').value = ''; $('#en-add-ru').value = ''; $('#en-add-ex').value = '';
+  save(); renderEnglish();
+  toast('Слово добавлено', 'success');
+});
+/* --- тест на слова --- */
+let enDir = 'en-ru', enTest = null;
+$('#en-test-dir').addEventListener('click', e => {
+  const b = e.target.closest('[data-dir]'); if (!b) return;
+  enDir = b.dataset.dir;
+  $$('#en-test-dir button').forEach(x => x.classList.toggle('on', x === b));
+});
+function renderEnTestSetup() { $('#en-test-run').innerHTML = ''; }
+$('#en-test-start').addEventListener('click', () => {
+  let pool = allWords();
+  const lv = $('#en-test-level').value;
+  if (lv) pool = pool.filter(w => (w.level || w.s) === lv);
+  if (pool.length < 4) { toast('Слишком мало слов на этом уровне — выберите другой', 'info'); return; }
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const questions = pool.slice(0, 10).map(w => {
+    const distract = pool.filter(x => x !== w).sort(() => Math.random() - .5).slice(0, 3).map(x => enDir === 'en-ru' ? x.ru : x.en);
+    const correct = enDir === 'en-ru' ? w.ru : w.en;
+    const options = [correct, ...distract];
+    for (let i = options.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [options[i], options[j]] = [options[j], options[i]]; }
+    return { w, correct, options, answer: options.indexOf(correct), answered: false };
+  });
+  enTest = { questions, idx: 0, score: 0 };
+  renderEnQuestion();
+});
+function renderEnQuestion() {
+  const { questions, idx } = enTest;
+  const q = questions[idx];
+  const el = $('#en-test-run');
+  el.innerHTML = `<div class="card">
+    <div class="row-between mb-14"><b>Слово ${idx + 1} из ${questions.length}</b><span class="chip" style="pointer-events:none">EN → RU: ${enDir === 'en-ru' ? 'да' : 'нет'}</span></div>
+    <div class="quiz-progress"><i style="width:${idx / questions.length * 100}%"></i></div>
+    <div style="font-size:22px;font-weight:800;margin-bottom:14px">${esc(enDir === 'en-ru' ? q.w.en : q.w.ru)}</div>
+    <div id="en-opts">${q.options.map((o, i) => `<button class="opt-btn" data-i="${i}"><span class="opt-letter">${['А', 'Б', 'В', 'Г'][i]}</span><span>${esc(o)}</span></button>`).join('')}</div>
+    <div id="en-fb"></div></div>`;
+  $$('#en-opts .opt-btn').forEach(b => b.onclick = () => {
+    if (q.answered) return;
+    q.answered = true;
+    const pick = Number(b.dataset.i);
+    const ok = pick === q.answer;
+    if (ok) enTest.score++;
+    const st = S.wordStats[q.w.id] || (S.wordStats[q.w.id] = { c: 0, w: 0 });
+    ok ? st.c++ : st.w++;
+    $$('#en-opts .opt-btn').forEach(x => {
+      x.disabled = true;
+      const i = Number(x.dataset.i);
+      if (i === q.answer) x.classList.add('correct');
+      else if (i === pick) x.classList.add('wrong');
+      else x.classList.add('dim');
+    });
+    $('#en-fb').innerHTML = `<div class="explain-box"><b>${ok ? '✓ Верно!' : '✗ Правильно: ' + esc(q.correct) + '.'}</b>${q.w.ex ? '<br>' + esc(q.w.ex) : ''}</div>
+      <button class="btn btn-primary mt-14" id="en-next">${idx + 1 < questions.length ? 'Далее' : 'Завершить'}</button>`;
+    $('#en-next').onclick = () => { enTest.idx++; save(); enTest.idx < questions.length ? renderEnQuestion() : finishEnTest(); };
+  });
+}
+function finishEnTest() {
+  const { questions, score } = enTest;
+  const pct = Math.round(score / questions.length * 100);
+  S.tests.unshift({ t: Date.now(), subject: 'English', topic: 'Тест на слова' + ($('#en-test-level').value ? ' (' + $('#en-test-level').value + ')' : ''), diff: 1, score, total: questions.length, pct, kind: 'english' });
+  if (S.tests.length > 150) S.tests.length = 150;
+  logActivity('test', `Тест на слова: ${score}/${questions.length}`, 10);
+  $('#en-test-run').innerHTML = `<div class="card center">
+    <h3>Результат: ${score} из ${questions.length} (${pct}%)</h3>
+    <p class="muted small mt-8">Статистика по словам обновлена${pct >= 80 ? ' — отличное знание словаря!' : '.'}</p>
+    <button class="btn btn-ghost btn-sm mt-14" id="en-again"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Ещё тест</button></div>`;
+  if (pct >= 80) confetti(30);
+  $('#en-again').onclick = () => { $('#en-test-run').innerHTML = ''; };
+  renderEnglish();
+}
+/* --- Premium-наборы --- */
+function renderPacks() {
+  const el = $('#en-packs');
+  if (!isPremium()) {
+    el.innerHTML = `<div class="card center" style="padding:46px;position:relative">
+      <svg class="ic ic-lg" style="color:var(--gold);width:52px;height:52px"><use href="#i-crown"/></svg>
+      <h3 style="margin-top:12px">Premium-наборы слов</h3>
+      <p class="muted small mt-8" style="max-width:420px;margin-left:auto;margin-right:auto">Неправильные глаголы, фразовые глаголы и деловая лексика — с переводом и примерами. Доступно на тарифе Premium.</p>
+      <button class="btn btn-gold mt-20" data-go="premium"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Открыть Premium</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = PACKS.map(p => `<div class="card mb-20">
+    <h3 class="mb-14 row" style="gap:10px"><svg class="ic" style="color:var(--gold)"><use href="#${p.icon}"/></svg>${p.title} <span class="chip" style="pointer-events:none">${p.words.length}</span></h3>
+    <p class="small muted mb-14">${p.desc}</p>
+    ${p.words.map(([en, ru, ex]) => wordRow({ en, ru, ex, id: 'p:' + en, level: 'C1', s: undefined })).join('')}
+  </div>`).join('');
+}
+
+/* --- изучение английских слов в режиме 3D-карточек --- */
+let ecs = null;
+$('#en-cards-start').addEventListener('click', () => {
+  let pool = WORDS.map(w => ({ ...w, id: w.s + ':' + w.en.toLowerCase() }));
+  if (enLevel) pool = pool.filter(w => w.s === enLevel);
+  if (enSearch) pool = pool.filter(w => w.en.toLowerCase().includes(enSearch) || w.ru.toLowerCase().includes(enSearch));
+  if (pool.length < 2) { toast('Слишком мало слов для сессии — ослабьте фильтры', 'info'); return; }
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  const cards = pool.slice(0, 20).map(w => ({ en: w.en, ru: w.ru, ex: w.ex, id: w.id }));
+  ecs = { cards, queue: cards.map((c, i) => i), pos: 0, known: 0, fresh: 0, repeats: 0, flipped: false };
+  renderEnCards();
+  $('#en-cards-study').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+function enCardCurrent() { return ecs.cards[ecs.queue[ecs.pos]]; }
+function renderEnCards() {
+  const st = $('#en-cards-study');
+  st.hidden = false;
+  if (!ecs.queue.length) {
+    st.innerHTML = `<div class="card center" style="padding:44px">
+      <svg class="ic ic-lg" style="color:var(--ok);width:52px;height:52px"><use href="#i-award"/></svg>
+      <h3 style="margin-top:12px">Сессия завершена!</h3>
+      <p class="muted small mt-8">Знаю: ${ecs.known} · повторов: ${ecs.repeats} · новых слов выучено: ${ecs.fresh}</p>
+      <button class="btn btn-primary mt-14" id="en-cards-close">Закрыть</button></div>`;
+    $('#en-cards-close').onclick = closeEnCards;
+    confetti(30);
+    renderEnglish();
+    return;
+  }
+  const c = enCardCurrent();
+  st.innerHTML = `<div class="card" style="padding:20px 22px">
+    <div class="row-between mb-14">
+      <b>English · 3D-карточки</b>
+      <span class="chip" style="pointer-events:none">${ecs.pos + 1} / ${ecs.queue.length}</span>
+    </div>
+    <div class="pbar mb-20"><i style="width:${(ecs.pos / ecs.queue.length) * 100}%"></i></div>
+    <div class="fc-stage" style="max-width:520px">
+      <div class="fc" id="en-fc" style="min-height:240px;height:260px">
+        <div class="fc-inner">
+          <div class="fc-face"><div class="fc-label">English</div><div class="fc-text">${esc(c.en)}</div>
+            <button class="icon-btn js-tts" data-tts="${esc(c.en)}" title="${isPremium() ? 'Озвучить' : 'Озвучка — Premium'}" style="width:36px;height:36px"><svg class="ic ic-sm"><use href="#i-volume"/></svg></button>
+            <div class="fc-hint">нажмите на карточку, чтобы увидеть перевод</div></div>
+          <div class="fc-face back"><div class="fc-label">Перевод</div><div class="fc-text">${esc(c.ru)}</div>
+            ${c.ex ? `<div class="fc-hint">${esc(c.ex)}</div>` : ''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-actions">
+      <button class="btn btn-ghost btn-lg" id="en-fc-repeat"><svg class="ic ic-sm"><use href="#i-refresh"/></svg>Повторить</button>
+      <button class="btn btn-primary btn-lg" id="en-fc-know"><svg class="ic ic-sm"><use href="#i-check"/></svg>Знаю</button>
+    </div>
+  </div>`;
+  $('#en-fc').addEventListener('click', e => { if (e.target.closest('.js-tts')) return; $('#en-fc').classList.toggle('flipped'); });
+  $('#en-fc-know').onclick = () => {
+    if (!S.learned[c.id]) {
+      S.learned[c.id] = { at: Date.now() };
+      logActivity('word', 'Выучено слово: ' + c.en + ' — ' + c.ru, 3);
+      ecs.fresh++;
+    }
+    ecs.known++;
+    advanceEnCards();
+  };
+  $('#en-fc-repeat').onclick = () => { ecs.queue.push(ecs.queue[ecs.pos]); ecs.repeats++; advanceEnCards(); };
+}
+function advanceEnCards() { ecs.pos++; save(); renderEnCards(); }
+function closeEnCards() { ecs = null; $('#en-cards-study').hidden = true; }
+</script>
+<script>
+'use strict';
+/* ================= Планировщик ================= */
+function renderPlanner() {
+  const aiCard = $('#planner-ai-card');
+  $$('.js-ai-lock', aiCard).forEach(x => x.remove());
+  if (!isPremium()) {
+    aiCard.classList.add('lock-overlay');
+    const lock = document.createElement('div');
+    lock.className = 'js-ai-lock';
+    lock.style.cssText = 'position:absolute;inset:0;z-index:3;border-radius:inherit;background:rgba(5,5,16,.74);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px';
+    lock.innerHTML = `<svg class="ic ic-lg" style="color:var(--gold);width:44px;height:44px"><use href="#i-crown"/></svg>
+      <b style="font-size:16px">Персональные ИИ-планы — в Premium</b>
+      <p class="small muted" style="max-width:300px">ИИ разобьёт большую цель на небольшие задачи по дням и срокам.</p>
+      <button class="btn btn-gold btn-sm" data-go="premium"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Открыть Premium</button>`;
+    aiCard.appendChild(lock);
+  } else {
+    aiCard.classList.remove('lock-overlay');
+    if (SF.mode !== 'server' || !SF.ai) {
+      const note = document.createElement('div');
+      note.className = 'js-ai-lock small muted mt-8';
+      note.innerHTML = '⚠ ИИ не подключён — инструкция в разделе «Настройки». Планы вручную доступны всегда.';
+      aiCard.appendChild(note);
+    }
+  }
+  renderPlans();
+}
+RENDER.planner = renderPlanner;
+function planProgress(p) {
+  const done = p.tasks.filter(t => t.done).length;
+  return { done, total: p.tasks.length, pct: p.tasks.length ? Math.round(done / p.tasks.length * 100) : 0 };
+}
+function renderPlans() {
+  const el = $('#planner-list');
+  if (!S.plans.length) {
+    el.innerHTML = `<div class="card center" style="padding:40px"><p class="muted">Планов пока нет. Создайте цель вручную или сгенерируйте ИИ-план (Premium).</p></div>`;
+    return;
+  }
+  el.innerHTML = S.plans.map(p => {
+    const pr = planProgress(p);
+    const dl = daysLeft(p.deadline);
+    const dlChip = p.deadline
+      ? `<span class="chip" style="pointer-events:none"><svg class="ic ic-sm" style="color:${dl < 0 ? 'var(--err)' : 'var(--gold)'}"><use href="#i-clock"/></svg>${dl < 0 ? 'срок прошёл' : dl + ' ' + plural(dl, ['день', 'дня', 'дней'])}</span>`
+      : '';
+    return `<div class="card plan-card mb-14" data-plan="${p.id}">
+      <div class="row-between mb-14">
+        <div style="min-width:0"><b style="font-size:16px">${esc(p.title)}</b>
+          <div class="small muted mt-8">${pr.done} из ${pr.total} задач выполнено</div></div>
+        <div class="row" style="gap:8px">${dlChip}
+          <button class="icon-btn js-pdel" data-pdel="${p.id}" title="Удалить план" style="width:34px;height:34px"><svg class="ic ic-sm"><use href="#i-trash"/></svg></button>
+        </div>
+      </div>
+      <div class="pbar mb-14"><i class="${pr.pct === 100 && pr.total ? 'ok' : ''}" style="width:${pr.pct}%"></i></div>
+      <div class="js-tasks">
+        ${p.tasks.map(t => `
+          <div class="task-item ${t.done ? 'done' : ''}" data-task="${t.id}">
+            <button class="task-check js-tcheck" data-check="${t.id}" aria-label="Отметить"><svg class="ic"><use href="#i-check"/></svg></button>
+            ${t.day ? `<span class="task-day">день ${t.day}</span>` : ''}
+            <div style="flex:1;min-width:0"><div class="task-title" style="font-weight:600;font-size:14px">${esc(t.title)}</div>
+            ${t.detail ? `<div class="small muted">${esc(t.detail)}</div>` : ''}</div>
+            <button class="icon-btn js-tdel" data-tdel="${t.id}" title="Удалить задачу" style="width:30px;height:30px"><svg class="ic ic-sm"><use href="#i-x"/></svg></button>
+          </div>`).join('')}
+      </div>
+      <div class="row mt-14" style="gap:8px;flex-wrap:wrap">
+        <input class="inp js-newtask" placeholder="Новая задача…" maxlength="200" style="flex:1;min-width:180px">
+        <button class="btn btn-primary btn-sm js-addtask"><svg class="ic ic-sm"><use href="#i-plus"/></svg>Добавить</button>
+      </div>
+    </div>`;
+  }).join('');
+  $$('#planner-list .js-pdel').forEach(b => b.onclick = () => {
+    const p = S.plans.find(x => x.id === b.dataset.pdel);
+    confirmModal('Удалить план?', '«' + (p?.title || '') + '» будет удалён вместе с задачами.', 'Удалить', () => {
+      S.plans = S.plans.filter(x => x.id !== b.dataset.pdel);
+      save(); renderPlans();
+    });
+  });
+  $$('#planner-list .js-tcheck').forEach(b => b.onclick = () => {
+    const planEl = b.closest('[data-plan]');
+    const p = S.plans.find(x => x.id === planEl.dataset.plan);
+    const t = p.tasks.find(x => x.id === b.dataset.check);
+    t.done = !t.done;
+    if (t.done) { logActivity('task', 'Задача: ' + t.title.slice(0, 60), 10); toast('+10 очков', 'success', 1600); }
+    save(); renderPlans(); renderDashboardIfActive();
+    if (planProgress(p).pct === 100 && p.tasks.length) confetti(26);
+  });
+  $$('#planner-list .js-tdel').forEach(b => b.onclick = () => {
+    const planEl = b.closest('[data-plan]');
+    const p = S.plans.find(x => x.id === planEl.dataset.plan);
+    p.tasks = p.tasks.filter(x => x.id !== b.dataset.tdel);
+    save(); renderPlans();
+  });
+  $$('#planner-list .js-addtask').forEach(b => b.onclick = () => {
+    const planEl = b.closest('[data-plan]');
+    const p = S.plans.find(x => x.id === planEl.dataset.plan);
+    const inp = planEl.querySelector('.js-newtask');
+    const v = inp.value.trim();
+    if (!v) { toast('Введите текст задачи', 'info'); return; }
+    p.tasks.push({ id: uid(), title: v, detail: '', day: 0, done: false });
+    inp.value = '';
+    save(); renderPlans();
+  });
+  $$('#planner-list .js-newtask').forEach(inp => inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); inp.closest('[data-plan]').querySelector('.js-addtask').click(); }
+  }));
+}
+$('#pl-create').addEventListener('click', () => {
+  const t = $('#pl-title').value.trim();
+  if (!t) { toast('Введите название плана', 'info'); return; }
+  S.plans.unshift({ id: uid(), title: t, deadline: $('#pl-deadline2').value || '', t: Date.now(), tasks: [] });
+  $('#pl-title').value = '';
+  save(); renderPlans();
+  toast('План создан — добавьте задачи', 'success');
+});
+$('#pl-ai-gen').addEventListener('click', async () => {
+  if (!isPremium()) { upsell('plan'); return; }
+  const goal = $('#pl-goal').value.trim();
+  const days = clamp(Number($('#pl-days').value) || 7, 2, 120);
+  if (!goal) { toast('Опишите, что хотите изучить', 'info'); $('#pl-goal').focus(); return; }
+  if (SF.mode !== 'server' || !SF.ai) { toast('ИИ не подключён — инструкция в Настройках', 'info'); go('settings'); return; }
+  const btn = $('#pl-ai-gen');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="typing dots"><span></span><span></span><span></span></span> ИИ составляет план…';
+  try {
+    const r = await aiPost('/api/plan', { goal, days, deadline: $('#pl-deadline').value || '', level: $('#pl-level').value });
+    S.plans.unshift({ id: uid(), title: goal.slice(0, 90), deadline: $('#pl-deadline').value || '', t: Date.now(), tasks: r.tasks.map(t => ({ id: uid(), title: t.title, detail: t.detail, day: t.day, done: false })) });
+    save(); renderPlans();
+    logActivity('plan', 'ИИ-план: ' + goal.slice(0, 50), 5);
+    toast('Готово: план из ' + pluralN(r.tasks.length, ['задачи', 'задач', 'задач']), 'success');
+    el_planScroll();
+  } catch (e) { const t = aiErrText(e); if (t) toast(t, 'error', 5200); }
+  finally { btn.disabled = false; btn.innerHTML = '<svg class="ic"><use href="#i-spark"/></svg>Сгенерировать план'; }
+});
+function el_planScroll() { $('#planner-list').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
+/* ================= Статистика ================= */
+function prepCanvas(cv) {
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  const w = cv.clientWidth || 600, h = Number(cv.getAttribute('height')) || 230;
+  cv.width = w * dpr; cv.height = h * dpr;
+  cv.style.height = h + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function drawLine(cv, data) {
+  const { ctx, w, h } = prepCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 34, r: 12, t: 12, b: 26 };
+  const max = Math.max(5, ...data.map(d => d.y));
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.fillStyle = '#6b72a0';
+  ctx.font = '10.5px system-ui'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + ih * (1 - i / 4);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    ctx.fillText(String(Math.round(max * i / 4)), 6, y + 3);
+  }
+  const step = Math.max(1, Math.ceil(data.length / 7));
+  data.forEach((d, i) => {
+    if (i % step === 0) {
+      const x = pad.l + iw * (i / (data.length - 1 || 1));
+      ctx.fillText(d.x, x - 10, h - 8);
+    }
+  });
+  const pts = data.map((d, i) => [pad.l + iw * (i / (data.length - 1 || 1)), pad.t + ih * (1 - d.y / max)]);
+  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ih);
+  grad.addColorStop(0, 'rgba(139,92,246,.32)'); grad.addColorStop(1, 'rgba(139,92,246,0)');
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+  ctx.lineTo(pts[pts.length - 1][0], pad.t + ih); ctx.lineTo(pts[0][0], pad.t + ih); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+  const lg = ctx.createLinearGradient(pad.l, 0, w - pad.r, 0);
+  lg.addColorStop(0, '#8b5cf6'); lg.addColorStop(1, '#4f7dff');
+  ctx.beginPath();
+  pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+  ctx.strokeStyle = lg; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.stroke();
+  pts.forEach(p => { ctx.beginPath(); ctx.arc(p[0], p[1], 3, 0, 7); ctx.fillStyle = '#a78bfa'; ctx.fill(); });
+}
+function drawBars(cv, bars) {
+  const { ctx, w, h } = prepCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 30, r: 10, t: 16, b: 30 };
+  const max = Math.max(1, ...bars.map(b => b.v));
+  const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
+  ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.fillStyle = '#6b72a0'; ctx.font = '10.5px system-ui';
+  for (let i = 0; i <= 3; i++) {
+    const y = pad.t + ih * (1 - i / 3);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(w - pad.r, y); ctx.stroke();
+    ctx.fillText(String(Math.round(max * i / 3)), 6, y + 3);
+  }
+  const n = bars.length, gap = iw / n, bw = Math.min(54, gap * .58);
+  bars.forEach((b, i) => {
+    const x = pad.l + gap * i + (gap - bw) / 2;
+    const bh = ih * (b.v / max);
+    const y = pad.t + ih - bh;
+    const g = ctx.createLinearGradient(0, y, 0, y + bh || 1);
+    g.addColorStop(0, b.c1); g.addColorStop(1, b.c2);
+    ctx.fillStyle = g;
+    const r = Math.min(8, bw / 2);
+    ctx.beginPath();
+    ctx.moveTo(x, y + bh);
+    ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.lineTo(x + bw - r, y); ctx.quadraticCurveTo(x + bw, y, x + bw, y + r);
+    ctx.lineTo(x + bw, y + bh); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#98a0c8'; ctx.textAlign = 'center';
+    ctx.fillText(String(b.v), x + bw / 2, y - 5);
+    ctx.fillText(b.label, x + bw / 2, h - 9);
+    ctx.textAlign = 'left';
+  });
+}
+function weekSums(offsetWeeks) {
+  const sums = { pts: 0, words: 0, tests: 0, ai: 0, cards: 0, tasks: 0 };
+  const now = new Date();
+  const dow = (now.getDay() + 6) % 7;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - dow - offsetWeeks * 7 + i);
+    const o = S.daily[dkey(d)];
+    if (o) { sums.pts += o.pts; sums.words += o.words; sums.tests += o.tests; sums.ai += o.ai; sums.cards += o.cards; sums.tasks += o.tasks; }
+  }
+  return sums;
+}
+function renderStats() {
+  const t = totals();
+  animNum($('#st-words'), t.words);
+  animNum($('#st-tests'), t.tests);
+  const lbl2 = (id, n, one, many) => { const el = $(id); if (el) el.textContent = n === 1 ? one : many; };
+  lbl2('#st-words-lbl', t.words, 'слово выучено', 'слов выучено');
+  lbl2('#st-tests-lbl', t.tests, 'тест пройден', 'тестов пройдено');
+  const accEl = $('#st-acc');
+  const all = S.tests.reduce((a, x) => ({ s: a.s + x.score, n: a.n + x.total }), { s: 0, n: 0 });
+  accEl.textContent = all.n ? Math.round(all.s / all.n * 100) + '%' : '—';
+  $('#st-streak').textContent = calcStreak();
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push({ x: d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }), y: S.daily[dkey(d)]?.pts || 0 });
+  }
+  drawLine($('#ch-activity'), days);
+  const wk = weekSums(0);
+  drawBars($('#ch-week'), [
+    { label: 'Слова', v: wk.words, c1: '#34d399', c2: '#10b981' },
+    { label: 'Тесты', v: wk.tests, c1: '#4f7dff', c2: '#3b5fd9' },
+    { label: 'ИИ', v: wk.ai, c1: '#a78bfa', c2: '#8b5cf6' },
+    { label: 'Карт.', v: wk.cards, c1: '#fbbf24', c2: '#f59e0b' },
+    { label: 'Задачи', v: wk.tasks, c1: '#7dd3fc', c2: '#38bdf8' },
+  ]);
+  renderCompare();
+  renderHeatmap();
+  const topics = Object.values(S.topics).sort((a, b) => b.at - a.at);
+  $('#st-topics').innerHTML = topics.length
+    ? topics.map(x => `<span class="chip" style="pointer-events:none">${esc(x.s)} · ${esc(x.u)} <b style="color:${x.pct >= 60 ? 'var(--ok)' : 'var(--gold)'}">${x.pct}%</b></span>`).join('')
+    : '<p class="muted small">Темы появятся после прохождения тестов.</p>';
+  $('#st-history').innerHTML = S.activity.slice(0, 40).map(histItem).join('') || '<p class="muted small">История пуста.</p>';
+}
+RENDER.stats = renderStats;
+function lockedPanel(feature) {
+  const [title, desc] = UPSell[feature];
+  return `<div style="position:absolute;inset:0;z-index:3;border-radius:inherit;background:rgba(5,5,16,.74);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:18px">
+    <svg class="ic" style="color:var(--gold);width:36px;height:36px"><use href="#i-crown"/></svg>
+    <b>${esc(title)}</b><p class="small muted" style="max-width:260px">${esc(desc)}</p>
+    <button class="btn btn-gold btn-sm" data-go="premium"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Открыть Premium</button></div>`;
+}
+function renderCompare() {
+  const card = $('#st-cmp-card');
+  $$('.js-lockp', card).forEach(x => x.remove());
+  if (!isPremium()) {
+    card.classList.add('lock-overlay');
+    const d = document.createElement('div');
+    d.className = 'js-lockp';
+    d.innerHTML = lockedPanel('stats');
+    card.appendChild(d);
+    return;
+  }
+  card.classList.remove('lock-overlay');
+  const cur = weekSums(0), prev = weekSums(1);
+  const rows = [['Очки активности', 'pts'], ['Выучено слов', 'words'], ['Тестов', 'tests'], ['Сообщений ИИ', 'ai'], ['Карточек', 'cards'], ['Задач', 'tasks']];
+  $('#st-cmp').innerHTML = rows.map(([label, k]) => {
+    const d = prev[k] === 0 ? (cur[k] > 0 ? null : 0) : Math.round((cur[k] - prev[k]) / prev[k] * 100);
+    const delta = d === null ? '<span class="cmp-delta up">новая!</span>'
+      : `<span class="cmp-delta ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : ''}${d}%</span>`;
+    return `<div class="cmp-row"><span style="flex:1" class="small muted">${label}</span>
+      <b class="small">${cur[k]}</b><span class="small muted" style="width:56px;text-align:right">пр. нед: ${prev[k]}</span>${delta}</div>`;
+  }).join('');
+}
+function renderHeatmap() {
+  const card = $('#st-heat-card');
+  $$('.js-lockh', card).forEach(x => x.remove());
+  if (!isPremium()) {
+    card.classList.add('lock-overlay');
+    const d = document.createElement('div');
+    d.className = 'js-lockh';
+    d.innerHTML = lockedPanel('stats');
+    card.appendChild(d);
+    return;
+  }
+  card.classList.remove('lock-overlay');
+  let html = '';
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const pts = S.daily[dkey(d)]?.pts || 0;
+    const bg = pts === 0 ? 'rgba(255,255,255,.05)'
+      : pts < 5 ? 'rgba(139,92,246,.25)' : pts < 10 ? 'rgba(139,92,246,.45)'
+      : pts < 20 ? 'rgba(139,92,246,.65)' : 'rgba(245,158,11,.8)';
+    html += `<div class="hm-cell" style="background:${bg}" title="${dkey(d)}: ${pts} очков"></div>`;
+  }
+  $('#st-heatmap').innerHTML = html;
+}
+
+/* ================= Premium ================= */
+function renderPremium() {
+  const pr = isPremium();
+  $('#pr-current').innerHTML = pr
+    ? `<span class="badge badge-premium"><svg class="ic ic-sm"><use href="#i-crown"/></svg>Premium активен${S.premium.since && SF.mode !== 'server' ? ' · с ' + new Date(S.premium.since).toLocaleDateString('ru-RU') : ''}</span>`
+    : `<span class="badge">Ваш тариф: Free</span>`;
+  const msg = $('#pr-msg');
+  if (SF.mode !== 'server') {
+    msg.innerHTML = 'Активация по промокоду требует запущенного backend (он проверяет код на сервере). Инструкция — в разделе «Настройки». Быстрый просмотр Premium-интерфейса: демо-переключатель там же.';
+  } else if (!SF.premiumCodeEnabled) {
+    msg.innerHTML = 'На сервере не задан <code class="ic-c">PREMIUM_CODE</code> — активация по промокоду выключена. Задайте его в переменных окружения.';
+  } else {
+    msg.textContent = 'Промокод проверяется на сервере. Получить его можно у @vnepl в Telegram.';
+  }
+  refreshPlanUI();
+}
+RENDER.premium = renderPremium;
+$('#pr-activate').addEventListener('click', async () => {
+  const code = $('#pr-code').value.trim();
+  const msg = $('#pr-msg');
+  if (!code) { toast('Введите промокод', 'info'); return; }
+  if (SF.mode !== 'server') { renderPremium(); toast('Нужен запущенный backend — см. Настройки', 'info'); return; }
+  const btn = $('#pr-activate');
+  btn.disabled = true;
+  try {
+    const r = await aiPost('/api/premium/activate', { code });
+    SF.quota = r.quota; SF.plan = 'premium';
+    S.premium.active = true; S.premium.since = new Date().toISOString();
+    save();
+    refreshPlanUI(); renderPremium(); renderDashboardIfActive();
+    confetti(46);
+    toast('Premium активирован! Лимиты расширены.', 'gold', 5000);
+  } catch (e) {
+    const d = e?.data || {};
+    if (d.error === 'bad_code') { msg.innerHTML = '<span style="color:var(--err)">Неверный промокод. Проверьте его у @vnepl.</span>'; }
+    else if (d.error === 'no_promo_config') { msg.innerHTML = 'На сервере не задан <code class="ic-c">PREMIUM_CODE</code>.'; }
+    else { const t = aiErrText(e); if (t) { msg.textContent = t; } }
+  } finally { btn.disabled = false; }
+});
+
+/* ================= Настройки ================= */
+function renderSettings() {
+  $('#set-name').value = S.profile.name;
+  $('#set-goal').value = S.profile.goal;
+  $('#set-api-base').value = S.settings.apiBase || '';
+  $('#set-demo-row').hidden = SF.mode === 'server';
+  $('#set-demo-premium').checked = !!S.premium.demo;
+  const st = $('#set-api-status');
+  st.innerHTML = SF.mode === 'server'
+    ? `<div class="row" style="gap:9px;flex-wrap:wrap">
+        <span class="chip on"><svg class="ic ic-sm" style="color:var(--ok)"><use href="#i-checkc"/></svg>Backend подключён</span>
+        <span class="chip ${SF.ai ? 'on' : 'locked-chip'}">AI-модель: ${SF.ai ? 'активна' : 'не настроена'}</span>
+        <span class="chip">Тариф на сервере: <b style="margin-left:4px">${isPremium() ? 'Premium' : 'Free'}</b></span>
+        <span class="chip">Провайдер: ${esc(SF.provider || 'zai')}</span>
+      </div>`
+    : `<div class="row" style="gap:9px;flex-wrap:wrap">
+        <span class="chip locked-chip"><svg class="ic ic-sm" style="color:var(--err)"><use href="#i-warn"/></svg>Backend не найден</span>
+        <span class="chip locked-chip">ИИ недоступен</span>
+      </div><p class="small muted mt-8">Прогресс работает локально. Для ИИ запустите backend из папки <code class="ic-c">backend/</code> (инструкция ниже).</p>`;
+  refreshPlanUI();
+}
+RENDER.settings = renderSettings;
+$('#set-save').addEventListener('click', () => {
+  S.profile.name = ($('#set-name').value || 'Ученик').trim().slice(0, 30);
+  S.profile.goal = clamp(Number($('#set-goal').value) || 30, 5, 300);
+  save(); renderDashboardIfActive();
+  toast('Настройки сохранены', 'success');
+});
+$('#set-api-save').addEventListener('click', recheckApi);
+$('#set-api-recheck').addEventListener('click', recheckApi);
+async function recheckApi() {
+  S.settings.apiBase = ($('#set-api-base').value || '').trim().replace(/\/+$/, '');
+  save();
+  toast('Проверяем подключение…', 'info', 1600);
+  await sfInit();
+  refreshPlanUI(); renderSettings();
+  toast(SF.mode === 'server' ? (SF.ai ? 'Сервер и ИИ на связи!' : 'Сервер найден, но ИИ не настроен') : 'Сервер не найден — локальный режим', SF.mode === 'server' ? 'success' : 'error', 4200);
+}
+$('#set-demo-premium').addEventListener('change', e => {
+  S.premium.demo = e.target.checked;
+  if (S.premium.demo && !S.premium.since) S.premium.since = new Date().toISOString();
+  save();
+  SF.plan = isPremium() ? 'premium' : 'free';
+  refreshPlanUI(); renderDashboardIfActive();
+  toast(e.target.checked ? 'Демо-Premium включён (локально)' : 'Демо-Premium выключен', 'gold');
+});
+$('#set-export').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'StudyFlow AI', v: 1, exported: new Date().toISOString(), state: S }, null, 1)], { type: 'application/json' }));
+  a.download = 'studyflow-backup.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('Резервная копия сохранена', 'success');
+});
+$('#set-import').addEventListener('change', e => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  if (f.size > 5 * 1024 * 1024) { toast('Файл слишком большой', 'error'); return; }
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const j = JSON.parse(String(rd.result));
+      const st = j.state && typeof j.state === 'object' ? j.state : (typeof j === 'object' ? j : null);
+      if (!st) throw new Error('bad');
+      for (const k of Object.keys(DEFAULTS)) if (st[k] !== undefined) S[k] = st[k];
+      save();
+      toast('Данные импортированы', 'success');
+      setTimeout(() => location.reload(), 600);
+    } catch (err) { toast('Не удалось прочитать файл — это не резервная копия StudyFlow', 'error'); }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+});
+$('#set-reset').addEventListener('click', () => {
+  confirmModal('Сбросить все данные?', 'Прогресс, диалоги, карточки и настройки будут удалены из этого браузера безвозвратно.', 'Удалить всё', () => {
+    localStorage.removeItem(LS_KEY);
+    location.reload();
+  });
+});
+
+/* ================= Запуск ================= */
+window.addEventListener('hashchange', onRoute);
+(async function boot() {
+  initParticles();
+  refreshPlanUI();
+  await sfInit();
+  refreshPlanUI();
+  onRoute();
+  if (SF.mode === 'local') setTimeout(() => toast('Локальный режим: ИИ не подключён. Как включить — в Настройках.', 'info', 6000), 900);
+})();
+</script>
+</body>
+</html>

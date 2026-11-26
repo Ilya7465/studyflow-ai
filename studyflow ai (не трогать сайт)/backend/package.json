@@ -1,0 +1,17 @@
+{
+  "name": "studyflow-ai-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "StudyFlow AI — серверная часть: AI-прокси, тарифы Free/Premium, дневные лимиты (проверка на сервере)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "z-ai-web-dev-sdk": "^0.0.18"
+  }
+}
